@@ -26,3 +26,10 @@ export enum MediaType {
   Video,
   Image
 }
+
+export enum TokenType {
+  AccessToken,
+  RefreshToken,
+  ForgotPasswordToken,
+  EmailVerifyToken
+}

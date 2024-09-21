@@ -8,7 +8,7 @@ export const registerControler = async (
   res: Response
 ) => {
   try {
-    const result = userServices.register(req.body)
+    const result = await userServices.register(req.body)
     res.json({ result, message: 'register successfully' })
   } catch {
     res.json({ error: 'register failed' })
