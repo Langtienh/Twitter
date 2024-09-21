@@ -6,7 +6,7 @@ export default class User {
   private name: string
   private email: string
   private password: string
-  private dateOfBirth: string
+  private dateOfBirth: Date
   private createAt: Date
   private updateAt: Date
   private verify: UserVerifyStatus
@@ -27,7 +27,7 @@ export default class User {
     this.name = registerDTO.name
     this.email = registerDTO.email
     this.password = registerDTO.password
-    this.dateOfBirth = registerDTO.dateOfBirth
+    this.dateOfBirth = new Date(registerDTO.dateOfBirth)
     this.verify = UserVerifyStatus.Unverify
     this.role = UserRole.user
     this.createAt = now

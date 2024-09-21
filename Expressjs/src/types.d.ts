@@ -11,7 +11,7 @@ interface IUser {
   name: string
   email: string
   password: string
-  dateOfBirth: string
+  dateOfBirth: Date
   createAt: Date
   updateAt: Date
   verify: UserVerifyStatus

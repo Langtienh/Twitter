@@ -1,13 +1,16 @@
+import { RegisterDTO } from '@/models/dto/users.dto'
 import userServices from '@/services/users.services'
 import { Request, Response } from 'express'
+import { ParamsDictionary } from 'express-serve-static-core'
 
-export const registerControler = async (req: Request, res: Response) => {
+export const registerControler = async (
+  req: Request<ParamsDictionary, any, RegisterDTO>,
+  res: Response
+) => {
   try {
-    const { name, email, password, dateOfBirth } = req.body
-    const result = userServices.register({ name, email, password, dateOfBirth })
+    const result = userServices.register(req.body)
     res.json({ result, message: 'register successfully' })
-  } catch (error) {
-    console.log(error)
+  } catch {
     res.json({ error: 'register failed' })
   }
 }

@@ -7,6 +7,11 @@ class UserServices {
     const result = await databaseServices.users.insertOne(new User(registerDTO))
     return result
   }
+
+  async checkEmailExist(email: string) {
+    const user = await databaseServices.users.findOne({ email })
+    return user
+  }
 }
 const userServices = new UserServices()
 export default userServices
