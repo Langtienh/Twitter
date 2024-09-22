@@ -7,10 +7,6 @@ export const registerControler = async (
   req: Request<ParamsDictionary, any, RegisterDTO>,
   res: Response
 ) => {
-  try {
-    const result = await userServices.register(req.body)
-    res.json({ result, message: 'register successfully' })
-  } catch {
-    res.json({ error: 'register failed' })
-  }
+  const result = await userServices.register(req.body)
+  res.json({ result, message: 'register successfully' })
 }
