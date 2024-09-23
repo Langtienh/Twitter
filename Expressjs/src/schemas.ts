@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb'
 import {
+  MediaType,
   TweetAudiece,
   TweetType,
   UserRole,
@@ -30,8 +31,8 @@ interface IUser {
 
 interface IRefreshToken {
   _id: ObjectId
-  token: string
-  createAt: string
+  refreshToken: string
+  createAt: Date
   userId: ObjectId
 }
 
@@ -56,7 +57,7 @@ interface ITweet {
   parentId: ObjectId | null
   hashtags: string[]
   mentions: string[]
-  medias: TMedia[]
+  medias: IMedia[]
   guestViews: number
   userViews: number
   createAt: Date
@@ -81,5 +82,5 @@ interface ILike {
 interface IHashtag {
   _id: ObjectId
   name: string
-  createAt: string
+  createAt: Date
 }

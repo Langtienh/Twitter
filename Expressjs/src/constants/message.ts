@@ -1,5 +1,6 @@
-export const USERS_MASSAGE = {
+export const USERS_MESSAGE = {
   VALIDATION_ERROR: 'Validation error',
+  // register
   NAME_REQUIRED: 'Name is required',
   NAME_LENGTH: 'Name must be between 1 and 63 characters',
   EMAIL_REQUIRED: 'Email is required',
@@ -13,5 +14,12 @@ export const USERS_MASSAGE = {
   PASSWORD_CONFIRMATION_MISMATCH:
     'Password confirmation does not match password',
   DATE_OF_BIRTH_REQUIRED: 'Date of birth is required',
-  DATE_OF_BIRTH_INVALID: 'Invalid date format'
+  DATE_OF_BIRTH_INVALID: 'Invalid date format',
+  // login
+  EMAIL_OR_PASSWORD_INCORRECTLY: 'Accounts or passwords incorrectly',
+  REFRESH_TOKEN_REQUIED: 'RefreshToken is required',
+  REFRESH_TOKEN_INVALID: 'RefreshToken Invalid',
+  ACCESS_TOKEN_REQUIED: 'Access is required',
+  USED_REFRESH_TOKEN_OR_NOT_EXIST: 'Used refresh token or not exist',
+  ACCESS_TOKEN_UNAUTHORIZED: 'Accsess token unauthoried'
 } as const

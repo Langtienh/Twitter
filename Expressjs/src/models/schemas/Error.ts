@@ -1,6 +1,6 @@
 import httpStatus from '@/constants/http.status'
 
-export class ErrorWithMessage {
+export class ErrorWithStatus {
   message: string
   status: number
   constructor({ message, status }: { message: string; status: number }) {
@@ -17,7 +17,7 @@ type TError = Record<
   }
 >
 
-export class EntityError extends ErrorWithMessage {
+export class EntityError extends ErrorWithStatus {
   errors: TError
   constructor({ message, errors }: { message: string; errors: TError }) {
     super({ message: message, status: httpStatus.UNPROCESSABLE_ENTITY })

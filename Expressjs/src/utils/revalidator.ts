@@ -1,6 +1,6 @@
 import HTTP_STATUS from '@/constants/http.status'
-import { USERS_MASSAGE } from '@/constants/message'
-import { EntityError, ErrorWithMessage } from '@/models/schemas/Error'
+import { USERS_MESSAGE } from '@/constants/message'
+import { EntityError, ErrorWithStatus } from '@/models/schemas/Error'
 import express from 'express'
 import { ValidationChain, validationResult } from 'express-validator'
 import { RunnableValidationChains } from 'express-validator/lib/middlewares/schema'
@@ -25,7 +25,7 @@ export const validate = (
     for (const key in errorObject) {
       const { msg } = errorObject[key]
       if (
-        msg instanceof ErrorWithMessage &&
+        msg instanceof ErrorWithStatus &&
         msg.status !== HTTP_STATUS.UNPROCESSABLE_ENTITY
       ) {
         return next(msg)
@@ -35,7 +35,7 @@ export const validate = (
     // trả lỗi entity
     next(
       new EntityError({
-        message: USERS_MASSAGE.VALIDATION_ERROR,
+        message: USERS_MESSAGE.VALIDATION_ERROR,
         errors: errorObject
       })
     )

@@ -1,3 +1,4 @@
+import RefreshToken from '@/models/schemas/RefreshToken.schema'
 import User from '@/models/schemas/Users.schema'
 import { config } from 'dotenv'
 
@@ -26,7 +27,7 @@ class DatabaseServices {
   async connect() {
     try {
       await this.db.command({ ping: 1 })
-      console.log(`Connected to mongoDB successfully!. DbName: ${dbName}`)
+      console.log(`Connected to mongoDB with db: ${dbName} successfully!`)
     } catch {
       console.log('Connected failed')
       await this.client.close()
@@ -35,6 +36,10 @@ class DatabaseServices {
 
   get users(): Collection<User> {
     return this.db.collection('users')
+  }
+
+  get refreshToken(): Collection<RefreshToken> {
+    return this.db.collection('refreshToken')
   }
 }
 const databaseServices = new DatabaseServices()
