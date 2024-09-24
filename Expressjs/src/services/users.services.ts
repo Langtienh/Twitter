@@ -1,4 +1,4 @@
-import { TokenType, UserVerifyStatus } from '@/constants/enum'
+import { TokenType, UserRole, UserVerifyStatus } from '@/constants/enum'
 import {
   LoginRequestBody,
   LogoutRequestBody,
@@ -25,11 +25,17 @@ const ACCESS_TOKEN_EXP = process.env.ACCESS_TOKEN_EXP
 const EMAIL_VERIFY_TOKEN_EXP = process.env.EMAIL_VERIFY_TOKEN_EXP
 
 class UserServices {
-  private signAccessToken(userId: string) {
+  private signAccessToken(
+    userId: string,
+    verify: UserVerifyStatus,
+    role: UserRole
+  ) {
     return signToken({
       payload: {
         userId,
-        tokenType: TokenType.AccessToken
+        tokenType: TokenType.AccessToken,
+        verify,
+        role
       },
       option: {
         expiresIn: ACCESS_TOKEN_EXP
@@ -77,9 +83,13 @@ class UserServices {
     })
   }
 
-  private signAccessAndRefreshToken(userId: string) {
+  private signAccessAndRefreshToken(
+    userId: string,
+    verify: UserVerifyStatus,
+    role: UserRole
+  ) {
     return Promise.all([
-      this.signAccessToken(userId),
+      this.signAccessToken(userId, verify, role),
       this.signRefreshToken(userId)
     ])
   }
@@ -112,7 +122,9 @@ class UserServices {
     })
     await databaseServices.users.insertOne(user)
     const [accessToken, refreshToken] = await this.signAccessAndRefreshToken(
-      userId.toString()
+      userId.toString(),
+      UserVerifyStatus.Unverify,
+      UserRole.user
     )
     await this.insertRefreshToken(userId, refreshToken)
     return { accessToken, refreshToken }
@@ -135,8 +147,11 @@ class UserServices {
     )
     if (!user) return
     const userId = user._id.toString()
-    const [accessToken, refreshToken] =
-      await this.signAccessAndRefreshToken(userId)
+    const [accessToken, refreshToken] = await this.signAccessAndRefreshToken(
+      userId,
+      user.verify,
+      user.role
+    )
     await this.insertRefreshToken(user._id, refreshToken)
     return { accessToken, refreshToken }
   }
@@ -162,8 +177,11 @@ class UserServices {
         }
       }
     )
-    const [accessToken, refreshToken] =
-      await this.signAccessAndRefreshToken(userId)
+    const [accessToken, refreshToken] = await this.signAccessAndRefreshToken(
+      userId,
+      UserVerifyStatus.Verifyed,
+      UserRole.user
+    )
     return { accessToken, refreshToken }
   }
 
@@ -198,9 +216,14 @@ class UserServices {
     )
   }
 
-  async resetPassword(userid: ObjectId, password: string) {
+  async resetPassword(
+    userId: ObjectId,
+    password: string,
+    verify: UserVerifyStatus,
+    role: UserRole
+  ) {
     await databaseServices.users.updateOne(
-      { _id: userid },
+      { _id: userId },
       {
         $set: {
           password: hashPassword(password),
@@ -211,11 +234,31 @@ class UserServices {
         }
       }
     )
+
     const [accessToken, refreshToken] = await this.signAccessAndRefreshToken(
-      userid.toString()
+      userId.toString(),
+      verify,
+      role
     )
     return { accessToken, refreshToken }
   }
+
+  async getUserById(userId: string) {
+    const user = await databaseServices.users.findOne(
+      {
+        _id: new ObjectId(userId)
+      },
+      {
+        projection: {
+          password: 0,
+          emailVerifyToken: 0,
+          forgotPasswordToken: 0
+        }
+      }
+    )
+    return user
+  }
 }
+
 const userServices = new UserServices()
 export default userServices

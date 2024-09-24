@@ -31,8 +31,9 @@ export const USERS_MESSAGE = {
   EMAIL_VERIFY_SUCCESS: 'Verify email successfully',
   RESEND_EMAIL_VERIFY_SUCCESS: 'Resend Verify email successfully',
   SEND_LINK_RESET_PASSWORD_SUCCESS:
-    'Send the password recovery path to Gmail successfully',
+    'Send the password recovery path to email successfully',
   FORGOT_PASSWORD_EXIST: 'Forgot password is exist',
   FORGOT_PASSWORD_REQUIRED: 'Forgot password is required',
-  RESET_PASSWORD_SUCCESS: 'Reset password successfully'
+  RESET_PASSWORD_SUCCESS: 'Reset password successfully',
+  GET_USER_SUCCESS: 'Get user successfully'
 } as const

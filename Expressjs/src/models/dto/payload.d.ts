@@ -1,4 +1,9 @@
 export interface TokenPayLoad extends JwtPayload {
-  userId: string
   tokenType: TokenType
+  userId: string
+}
+
+export interface AccessTokenPayload extends TokenPayLoad {
+  verify: UserVerifyStatus
+  role: UserRole
 }

@@ -1,6 +1,6 @@
 import HTTP_STATUS from '@/constants/http.status'
 import { USERS_MESSAGE } from '@/constants/message'
-import { TokenPayLoad } from '@/models/dto/payload'
+import { AccessTokenPayload, TokenPayLoad } from '@/models/dto/payload'
 import {
   ForgotPasswordRequestBody,
   LoginRequestBody,
@@ -14,6 +14,7 @@ import {
 import { ErrorWithStatus } from '@/models/schemas/Error'
 import databaseServices from '@/services/database.servicers'
 import userServices from '@/services/users.services'
+import cleanObject from '@/utils/clearObject'
 import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { ObjectId } from 'mongodb'
@@ -72,7 +73,7 @@ export const resendVerifyEmailController = async (
   req: Request<ParamsDictionary, any>,
   res: Response
 ) => {
-  const { userId } = req.decodedAuthorization as TokenPayLoad
+  const { userId } = req.decodedAuthorization as AccessTokenPayload
   const user = await databaseServices.users.findOne({
     _id: new ObjectId(userId)
   })
@@ -117,6 +118,26 @@ export const resetPasswordController = async (
   const user = await databaseServices.users.findOne({ forgotPasswordToken })
   if (!user)
     return res.status(404).json({ message: USERS_MESSAGE.USER_NOT_FOUND })
-  const result = await userServices.resetPassword(user._id, password)
+  const result = await userServices.resetPassword(
+    user._id,
+    password,
+    user.verify,
+    user.role
+  )
   res.json({ message: USERS_MESSAGE.RESET_PASSWORD_SUCCESS, result })
+}
+
+export const getMeController = async (
+  req: Request<ParamsDictionary, any, ResetPasswordRequestBody>,
+  res: Response
+) => {
+  const { userId } = req.decodedAuthorization as AccessTokenPayload
+  const user = await userServices.getUserById(userId)
+  if (!user) {
+    return res.status(404).json({ message: USERS_MESSAGE.USER_NOT_FOUND })
+  }
+  return res.json({
+    message: USERS_MESSAGE.GET_USER_SUCCESS,
+    result: cleanObject(user)
+  })
 }
