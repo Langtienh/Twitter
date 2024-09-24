@@ -1,12 +1,16 @@
 import {
   loginControler,
   logoutControler,
-  registerControler
+  registerControler,
+  resendVerifyEmailControler,
+  verifyEmailController
 } from '@/controllers/users.controlers'
 import {
+  accessTokenValidator,
   loginValidator,
   logoutValidator,
-  registerValidator
+  registerValidator,
+  verifyEmail
 } from '@/middlewares/users.middleware'
 import { wrapHandlers } from '@/utils/handlers'
 import { Router } from 'express'
@@ -38,6 +42,37 @@ usersRouter.post('/login', loginValidator, wrapHandlers(loginControler))
  * Header:  {Authorization: Bearer <accessToken> }
  * Body: {refreshToken: string}
  */
-usersRouter.post('/logout', logoutValidator, wrapHandlers(logoutControler))
+usersRouter.post(
+  '/logout',
+  accessTokenValidator,
+  logoutValidator,
+  wrapHandlers(logoutControler)
+)
+
+/**
+ * Description: verify-email
+ * Path: /users/verify-email
+ * Method: POST
+ * Header?:  {Authorization: Bearer <accessToken> }
+ * Body: {emailVerifyToken: string, otp: string}
+ */
+usersRouter.post(
+  '/verify-email',
+  verifyEmail,
+  wrapHandlers(verifyEmailController)
+)
+
+/**
+ * Description: resend verify email
+ * Path: /users/resend-verfy-email
+ * Method: POST
+ * Header:  {Authorization: Bearer <accessToken> }
+ * Body: {}
+ */
+usersRouter.post(
+  '/resend-verfy-email',
+  accessTokenValidator,
+  wrapHandlers(resendVerifyEmailControler)
+)
 
 export default usersRouter

@@ -7,8 +7,8 @@ export enum UserVerifyStatus {
 export enum UserRole {
   user,
   admin,
-  dev,
-  demo
+  systemAdmin,
+  demoAdmin
 }
 
 export enum TweetType {

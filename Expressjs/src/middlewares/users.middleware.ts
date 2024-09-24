@@ -5,9 +5,17 @@ import databaseServices from '@/services/database.servicers'
 import userServices from '@/services/users.services'
 import { verifyToken } from '@/utils/jwt'
 import { validate } from '@/utils/revalidator'
+import { config } from 'dotenv'
 import { checkSchema } from 'express-validator'
 import { JsonWebTokenError } from 'jsonwebtoken'
 import { capitalize } from 'lodash'
+
+config()
+const JWT_ACCESS_TOKEN_SECRET = process.env.JWT_ACCESS_TOKEN_SECRET as string
+const JWT_REFRESH_TOKEN_SECRET = process.env.JWT_REFRESH_TOKEN_SECRET as string
+const JWT_EMAIL_VERIFY_SECRET = process.env.JWT_EMAIL_VERIFY_SECRET as string
+const JWT_FORGOT_PASSWORD_TOKEN_SECRET = process.env
+  .JWT_FORGOT_PASSWORD_TOKEN_SECRET as string
 
 export const registerValidator = validate(
   checkSchema(
@@ -144,7 +152,7 @@ export const loginValidator = validate(
   )
 )
 
-export const logoutValidator = validate(
+export const accessTokenValidator = validate(
   checkSchema(
     {
       Authorization: {
@@ -155,21 +163,22 @@ export const logoutValidator = validate(
             const accessToken = value.replace('Bearer ', '')
             if (accessToken === '')
               throw new Error(USERS_MESSAGE.ACCESS_TOKEN_REQUIED)
-            try {
-              const decodeAuthorization = await verifyToken({
-                token: accessToken
-              })
-            } catch (error) {
-              if (error instanceof JsonWebTokenError)
-                throw new ErrorWithStatus({
-                  status: HTTP_STATUS.UNAUTHORIZED,
-                  message: capitalize(error.message)
-                })
-              throw error
-            }
+            const decodedAuthorization = await verifyToken({
+              token: accessToken,
+              secretOrPublicKey: JWT_ACCESS_TOKEN_SECRET
+            })
+            req.decodedAuthorization = decodedAuthorization
           }
         }
-      },
+      }
+    },
+    ['headers']
+  )
+)
+
+export const logoutValidator = validate(
+  checkSchema(
+    {
       refreshToken: {
         notEmpty: {
           errorMessage: USERS_MESSAGE.REFRESH_TOKEN_REQUIED
@@ -178,7 +187,10 @@ export const logoutValidator = validate(
         custom: {
           options: async (value: string, { req }) => {
             try {
-              await verifyToken({ token: value })
+              await verifyToken({
+                token: value,
+                secretOrPublicKey: JWT_REFRESH_TOKEN_SECRET
+              })
               const refreshTokenDoc =
                 await await databaseServices.refreshToken.findOne({
                   refreshToken: value
@@ -201,6 +213,29 @@ export const logoutValidator = validate(
         }
       }
     },
-    ['body', 'headers']
+    ['body']
+  )
+)
+
+export const verifyEmail = validate(
+  checkSchema(
+    {
+      emailVerifyToken: {
+        notEmpty: {
+          errorMessage: USERS_MESSAGE.VERIFY_EMAIL_TOKEN_REQUIED
+        },
+        isString: true,
+        custom: {
+          options: async (value: string, { req }) => {
+            const decodedEmailVerifyToken = await verifyToken({
+              token: value,
+              secretOrPublicKey: JWT_EMAIL_VERIFY_SECRET
+            })
+            req.decodedEmailVerifyToken = decodedEmailVerifyToken
+          }
+        }
+      }
+    },
+    ['body']
   )
 )

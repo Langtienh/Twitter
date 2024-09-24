@@ -2,9 +2,9 @@ import { ObjectId } from 'mongodb'
 
 export default class RefreshToken {
   //  private _id: ObjectId
-  private refreshToken: string
-  private createAt: Date
-  private userId: ObjectId
+  refreshToken: string
+  createAt: Date
+  userId: ObjectId
   constructor({
     refreshToken,
     createAt,

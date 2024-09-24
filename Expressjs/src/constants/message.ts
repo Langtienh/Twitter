@@ -1,6 +1,7 @@
 export const USERS_MESSAGE = {
   VALIDATION_ERROR: 'Validation error',
   // register
+  USER_NOT_FOUND: 'User not found',
   NAME_REQUIRED: 'Name is required',
   NAME_LENGTH: 'Name must be between 1 and 63 characters',
   EMAIL_REQUIRED: 'Email is required',
@@ -16,10 +17,17 @@ export const USERS_MESSAGE = {
   DATE_OF_BIRTH_REQUIRED: 'Date of birth is required',
   DATE_OF_BIRTH_INVALID: 'Invalid date format',
   // login
+  LOGIN_SUCCESS: 'Login successfully',
+  LOGOUT_SUCCESS: 'Logout successfully',
+  REGISTER_SUCCESS: 'Register successfully',
   EMAIL_OR_PASSWORD_INCORRECTLY: 'Accounts or passwords incorrectly',
   REFRESH_TOKEN_REQUIED: 'RefreshToken is required',
   REFRESH_TOKEN_INVALID: 'RefreshToken Invalid',
   ACCESS_TOKEN_REQUIED: 'Access is required',
   USED_REFRESH_TOKEN_OR_NOT_EXIST: 'Used refresh token or not exist',
-  ACCESS_TOKEN_UNAUTHORIZED: 'Accsess token unauthoried'
+  ACCESS_TOKEN_UNAUTHORIZED: 'Accsess token unauthoried',
+  VERIFY_EMAIL_TOKEN_REQUIED: 'Verify token is required',
+  EMAIL_VERIFiED_BEFORE: 'Email verified before',
+  EMAIL_VERIFY_SUCCESS: 'Verify email successfully',
+  RESEND_EMAIL_VERIFY_SUCCESS: 'Resend Verify email successfully'
 } as const

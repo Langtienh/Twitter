@@ -1,37 +1,56 @@
 import { UserRole, UserVerifyStatus } from '@/constants/enum'
-import { RegisterDTO } from '../dto/users.dto'
+import { ObjectId } from 'mongodb'
 
 export default class User {
-  // private _id?: ObjectId
-  private name: string
-  private email: string
-  private password: string
-  private dateOfBirth: Date
-  private createAt: Date
-  private updateAt: Date
-  private verify: UserVerifyStatus
-  private role: UserRole
-  private deleted: boolean
+  _id?: ObjectId
+  name: string
+  email: string
+  password: string
+  createAt: Date
+  updateAt: Date
+  verify: UserVerifyStatus
+  role: UserRole
+  deleted: boolean
   // oftion
-  private username?: string
-  private bio?: string
-  private localtion?: string
-  private website?: string
-  private avatar?: string
-  private coverPhoto?: string
-  private emailVerifyToken?: string
-  private forgotPasswordToken?: string
+  dateOfBirth?: Date
+  username?: string
+  bio?: string
+  localtion?: string
+  website?: string
+  avatar?: string
+  coverPhoto?: string
+  emailVerifyToken?: string
+  forgotPasswordToken?: string
 
-  constructor(registerDTO: RegisterDTO) {
+  constructor(registerRequestBody: UserConstructor) {
     const now = new Date()
-    this.name = registerDTO.name
-    this.email = registerDTO.email
-    this.password = registerDTO.password
-    this.dateOfBirth = new Date(registerDTO.dateOfBirth)
+    this._id = registerRequestBody._id
+    this.name = registerRequestBody.name
+    this.email = registerRequestBody.email
+    this.password = registerRequestBody.password
+    this.dateOfBirth = registerRequestBody.dateOfBirth
     this.verify = UserVerifyStatus.Unverify
     this.role = UserRole.user
     this.createAt = now
     this.updateAt = now
     this.deleted = false
+    this.emailVerifyToken = registerRequestBody.emailVerifyToken
   }
+}
+
+interface UserConstructor {
+  _id?: ObjectId
+  name: string
+  email: string
+  password: string
+  // oftion
+  dateOfBirth?: Date
+  username?: string
+  bio?: string
+  localtion?: string
+  website?: string
+  avatar?: string
+  coverPhoto?: string
+  emailVerifyToken?: string
+  forgotPasswordToken?: string
 }
