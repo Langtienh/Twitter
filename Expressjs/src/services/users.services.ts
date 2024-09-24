@@ -19,6 +19,8 @@ const JWT_EMAIL_VERIFY_SECRET = process.env.JWT_EMAIL_VERIFY_SECRET as string
 const JWT_FORGOT_PASSWORD_TOKEN_SECRET = process.env
   .JWT_FORGOT_PASSWORD_TOKEN_SECRET as string
 const REFRESH_TOKEN_EXP = process.env.REFRESH_TOKEN_EXP
+const EMAIL_FORGOT_PASSWORD_TOKEN_EXP =
+  process.env.EMAIL_FORGOT_PASSWORD_TOKEN_EXP
 const ACCESS_TOKEN_EXP = process.env.ACCESS_TOKEN_EXP
 const EMAIL_VERIFY_TOKEN_EXP = process.env.EMAIL_VERIFY_TOKEN_EXP
 
@@ -59,6 +61,19 @@ class UserServices {
         expiresIn: REFRESH_TOKEN_EXP
       },
       privateKey: JWT_REFRESH_TOKEN_SECRET
+    })
+  }
+
+  private signForgotPasswordToken(userId: string) {
+    return signToken({
+      payload: {
+        userId,
+        tokenType: TokenType.ForgotPasswordToken
+      },
+      option: {
+        expiresIn: EMAIL_FORGOT_PASSWORD_TOKEN_EXP
+      },
+      privateKey: JWT_FORGOT_PASSWORD_TOKEN_SECRET
     })
   }
 
@@ -166,6 +181,40 @@ class UserServices {
         }
       }
     )
+  }
+
+  async forgotPassword(userId: string) {
+    const forgotPasswordToken = await this.signForgotPasswordToken(userId)
+    databaseServices.users.updateOne(
+      { _id: new ObjectId(userId) },
+      {
+        $set: {
+          forgotPasswordToken
+        },
+        $currentDate: {
+          updateAt: true
+        }
+      }
+    )
+  }
+
+  async resetPassword(userid: ObjectId, password: string) {
+    await databaseServices.users.updateOne(
+      { _id: userid },
+      {
+        $set: {
+          password: hashPassword(password),
+          forgotPasswordToken: undefined
+        },
+        $currentDate: {
+          updateAt: true
+        }
+      }
+    )
+    const [accessToken, refreshToken] = await this.signAccessAndRefreshToken(
+      userid.toString()
+    )
+    return { accessToken, refreshToken }
   }
 }
 const userServices = new UserServices()

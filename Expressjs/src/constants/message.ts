@@ -29,5 +29,10 @@ export const USERS_MESSAGE = {
   VERIFY_EMAIL_TOKEN_REQUIED: 'Verify token is required',
   EMAIL_VERIFiED_BEFORE: 'Email verified before',
   EMAIL_VERIFY_SUCCESS: 'Verify email successfully',
-  RESEND_EMAIL_VERIFY_SUCCESS: 'Resend Verify email successfully'
+  RESEND_EMAIL_VERIFY_SUCCESS: 'Resend Verify email successfully',
+  SEND_LINK_RESET_PASSWORD_SUCCESS:
+    'Send the password recovery path to Gmail successfully',
+  FORGOT_PASSWORD_EXIST: 'Forgot password is exist',
+  FORGOT_PASSWORD_REQUIRED: 'Forgot password is required',
+  RESET_PASSWORD_SUCCESS: 'Reset password successfully'
 } as const

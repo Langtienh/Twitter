@@ -239,3 +239,104 @@ export const verifyEmail = validate(
     ['body']
   )
 )
+
+export const forgotPasswordValidator = validate(
+  checkSchema(
+    {
+      email: {
+        notEmpty: {
+          errorMessage: USERS_MESSAGE.EMAIL_REQUIRED
+        },
+        isEmail: {
+          errorMessage: USERS_MESSAGE.EMAIL_INVALID
+        },
+        trim: true,
+        isLength: {
+          options: {
+            min: 1,
+            max: 63
+          }
+        }
+      }
+    },
+    ['body']
+  )
+)
+
+export const verifyForgotPasswordTokenValidator = validate(
+  checkSchema(
+    {
+      forgotPasswordToken: {
+        notEmpty: {
+          errorMessage: USERS_MESSAGE.FORGOT_PASSWORD_REQUIRED
+        },
+        trim: true,
+        custom: {
+          options: async (value: string, { req }) => {
+            await verifyToken({
+              token: value,
+              secretOrPublicKey: JWT_FORGOT_PASSWORD_TOKEN_SECRET
+            })
+          }
+        }
+      }
+    },
+    ['body']
+  )
+)
+
+export const resetPasswordValidator = validate(
+  checkSchema(
+    {
+      forgotPasswordToken: {
+        notEmpty: {
+          errorMessage: USERS_MESSAGE.FORGOT_PASSWORD_REQUIRED
+        },
+        trim: true,
+        custom: {
+          options: async (value: string, { req }) => {
+            await verifyToken({
+              token: value,
+              secretOrPublicKey: JWT_FORGOT_PASSWORD_TOKEN_SECRET
+            })
+          }
+        }
+      },
+      password: {
+        notEmpty: {
+          errorMessage: USERS_MESSAGE.PASSWORD_REQUIRED
+        },
+        isString: true,
+        isLength: {
+          options: {
+            min: 6,
+            max: 63
+          },
+          errorMessage: USERS_MESSAGE.PASSWORD_LENGTH
+        },
+        isStrongPassword: {
+          options: {
+            minLength: 6,
+            minLowercase: 1,
+            minNumbers: 1,
+            minUppercase: 1,
+            minSymbols: 1
+          },
+          errorMessage: USERS_MESSAGE.PASSWORD_STRENGTH_ERROR
+        }
+      },
+      confirmPassword: {
+        isString: { errorMessage: USERS_MESSAGE.CONFIRM_PASSWORD_REQUIRED },
+        custom: {
+          options: (value, { req }) => {
+            if (value !== req.body.password) {
+              throw new Error(USERS_MESSAGE.PASSWORD_CONFIRMATION_MISMATCH)
+            }
+            return true
+          }
+        }
+      }
+    },
+    ['body']
+  )
+)

@@ -1,16 +1,22 @@
 import {
-  loginControler,
-  logoutControler,
-  registerControler,
-  resendVerifyEmailControler,
-  verifyEmailController
-} from '@/controllers/users.controlers'
+  forgotPasswordController,
+  loginController,
+  logoutController,
+  registerController,
+  resendVerifyEmailController,
+  resetPasswordController,
+  verifyEmailController,
+  verifyForgotPasswordTokenController
+} from '@/controllers/users.controllers'
 import {
   accessTokenValidator,
+  forgotPasswordValidator,
   loginValidator,
   logoutValidator,
   registerValidator,
-  verifyEmail
+  resetPasswordValidator,
+  verifyEmail,
+  verifyForgotPasswordTokenValidator
 } from '@/middlewares/users.middleware'
 import { wrapHandlers } from '@/utils/handlers'
 import { Router } from 'express'
@@ -25,7 +31,7 @@ const usersRouter = Router()
 usersRouter.post(
   '/register',
   registerValidator,
-  wrapHandlers(registerControler)
+  wrapHandlers(registerController)
 )
 /**
  * Description: login user
@@ -33,7 +39,7 @@ usersRouter.post(
  * Method: POST
  * Body: {email: string, password: string}
  */
-usersRouter.post('/login', loginValidator, wrapHandlers(loginControler))
+usersRouter.post('/login', loginValidator, wrapHandlers(loginController))
 
 /**
  * Description: logout user
@@ -46,7 +52,7 @@ usersRouter.post(
   '/logout',
   accessTokenValidator,
   logoutValidator,
-  wrapHandlers(logoutControler)
+  wrapHandlers(logoutController)
 )
 
 /**
@@ -72,7 +78,42 @@ usersRouter.post(
 usersRouter.post(
   '/resend-verfy-email',
   accessTokenValidator,
-  wrapHandlers(resendVerifyEmailControler)
+  wrapHandlers(resendVerifyEmailController)
 )
 
+/**
+ * Description: send email forgot password
+ * Path: /users/forgot-password
+ * Method: POST
+ * Body: {email: string}
+ */
+usersRouter.post(
+  '/forgot-password',
+  forgotPasswordValidator,
+  wrapHandlers(forgotPasswordController)
+)
+
+/**
+ * Description: verify forgot password token isExist??
+ * Path: /users/verify-forgot-password-token
+ * Method: POST
+ * Body: {forgotPasswordToken: string}
+ */
+usersRouter.post(
+  '/verify-forgot-password-token',
+  verifyForgotPasswordTokenValidator,
+  wrapHandlers(verifyForgotPasswordTokenController)
+)
+
+/**
+ * Description: reset password
+ * Path: /users/reset-password
+ * Method: POST
+ * Body: {password: string, confirmPassword: string, forgotPasswordToken: string}
+ */
+usersRouter.post(
+  '/reset-password',
+  resetPasswordValidator,
+  wrapHandlers(resetPasswordController)
+)
 export default usersRouter

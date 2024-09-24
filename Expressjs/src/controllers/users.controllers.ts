@@ -1,12 +1,16 @@
 import HTTP_STATUS from '@/constants/http.status'
 import { USERS_MESSAGE } from '@/constants/message'
+import { TokenPayLoad } from '@/models/dto/payload'
 import {
+  ForgotPasswordRequestBody,
   LoginRequestBody,
   LogoutRequestBody,
   RegisterRequestBody,
-  TokenPayLoad,
-  VerifyEmailRequestBody
+  ResetPasswordRequestBody,
+  VerifyEmailRequestBody,
+  VerifyForgotPasswordTokenRequestBody
 } from '@/models/dto/users.request'
+
 import { ErrorWithStatus } from '@/models/schemas/Error'
 import databaseServices from '@/services/database.servicers'
 import userServices from '@/services/users.services'
@@ -14,7 +18,7 @@ import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { ObjectId } from 'mongodb'
 
-export const registerControler = async (
+export const registerController = async (
   req: Request<ParamsDictionary, any, RegisterRequestBody>,
   res: Response
 ) => {
@@ -22,7 +26,7 @@ export const registerControler = async (
   res.json({ message: USERS_MESSAGE.REGISTER_SUCCESS, result })
 }
 
-export const loginControler = async (
+export const loginController = async (
   req: Request<ParamsDictionary, any, LoginRequestBody>,
   res: Response
 ) => {
@@ -37,7 +41,7 @@ export const loginControler = async (
   res.json({ message: USERS_MESSAGE.LOGIN_SUCCESS, result })
 }
 
-export const logoutControler = async (
+export const logoutController = async (
   req: Request<ParamsDictionary, any, LogoutRequestBody>,
   res: Response
 ) => {
@@ -64,7 +68,7 @@ export const verifyEmailController = async (
   res.json({ message: USERS_MESSAGE.EMAIL_VERIFY_SUCCESS, result })
 }
 
-export const resendVerifyEmailControler = async (
+export const resendVerifyEmailController = async (
   req: Request<ParamsDictionary, any>,
   res: Response
 ) => {
@@ -80,4 +84,39 @@ export const resendVerifyEmailControler = async (
   }
   await userServices.resendVerifyEmail(userId)
   res.json({ message: USERS_MESSAGE.RESEND_EMAIL_VERIFY_SUCCESS })
+}
+
+export const forgotPasswordController = async (
+  req: Request<ParamsDictionary, any, ForgotPasswordRequestBody>,
+  res: Response
+) => {
+  const { email } = req.body
+  const user = await databaseServices.users.findOne({ email })
+  if (!user)
+    return res.status(404).json({ message: USERS_MESSAGE.USER_NOT_FOUND })
+  await userServices.forgotPassword(user._id.toString())
+  res.json({ message: USERS_MESSAGE.SEND_LINK_RESET_PASSWORD_SUCCESS })
+}
+
+export const verifyForgotPasswordTokenController = async (
+  req: Request<ParamsDictionary, any, VerifyForgotPasswordTokenRequestBody>,
+  res: Response
+) => {
+  const { forgotPasswordToken } = req.body
+  const user = await databaseServices.users.findOne({ forgotPasswordToken })
+  if (!user)
+    return res.status(404).json({ message: USERS_MESSAGE.USER_NOT_FOUND })
+  res.json({ message: USERS_MESSAGE.FORGOT_PASSWORD_EXIST })
+}
+
+export const resetPasswordController = async (
+  req: Request<ParamsDictionary, any, ResetPasswordRequestBody>,
+  res: Response
+) => {
+  const { forgotPasswordToken, password } = req.body
+  const user = await databaseServices.users.findOne({ forgotPasswordToken })
+  if (!user)
+    return res.status(404).json({ message: USERS_MESSAGE.USER_NOT_FOUND })
+  const result = await userServices.resetPassword(user._id, password)
+  res.json({ message: USERS_MESSAGE.RESET_PASSWORD_SUCCESS, result })
 }

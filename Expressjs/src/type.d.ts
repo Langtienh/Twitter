@@ -1,3 +1,4 @@
+import { TokenPayLoad } from '@/models/dto/payload'
 import 'express'
 import User from './models/schemas/Users.schema'
 

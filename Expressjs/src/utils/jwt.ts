@@ -1,5 +1,5 @@
 import HTTP_STATUS from '@/constants/http.status'
-import { TokenPayLoad } from '@/models/dto/users.request'
+import { TokenPayLoad } from '@/models/dto/payload'
 import { ErrorWithStatus } from '@/models/schemas/Error'
 import { config } from 'dotenv'
 import jwt from 'jsonwebtoken'
