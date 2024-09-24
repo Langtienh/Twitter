@@ -131,20 +131,10 @@ class UserServices {
   }
 
   async login(loginRequestBody: LoginRequestBody) {
-    const user = await databaseServices.users.findOne(
-      {
-        email: loginRequestBody.email,
-        password: hashPassword(loginRequestBody.password)
-      },
-      {
-        // Loại bỏ trường các trường nhạy cảm khỏi kết quả trả về
-        projection: {
-          password: 0,
-          emailVerifyToken: 0,
-          forgotPasswordToken: 0
-        }
-      }
-    )
+    const user = await databaseServices.users.findOne({
+      email: loginRequestBody.email,
+      password: hashPassword(loginRequestBody.password)
+    })
     if (!user) return
     const userId = user._id.toString()
     const [accessToken, refreshToken] = await this.signAccessAndRefreshToken(
@@ -162,6 +152,23 @@ class UserServices {
       refreshToken
     })
     return result
+  }
+
+  async refreshToken(userId: string, refreshToken: string) {
+    const user = await databaseServices.users.findOne({
+      _id: new ObjectId(userId)
+    })
+    if (!user) return
+    const [accessToken, newRefreshToken] = await this.signAccessAndRefreshToken(
+      userId,
+      user.verify,
+      user.role
+    )
+    await databaseServices.refreshToken.deleteOne({
+      refreshToken
+    })
+    await this.insertRefreshToken(user._id, newRefreshToken)
+    return { accessToken, refreshToken: newRefreshToken }
   }
 
   async verifyEmail(userId: string) {

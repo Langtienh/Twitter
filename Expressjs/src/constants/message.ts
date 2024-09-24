@@ -19,6 +19,7 @@ export const USERS_MESSAGE = {
   // login
   LOGIN_SUCCESS: 'Login successfully',
   LOGOUT_SUCCESS: 'Logout successfully',
+  REFRESH_TOKEN_SUCCESS: 'Refresh token successfully',
   REGISTER_SUCCESS: 'Register successfully',
   EMAIL_OR_PASSWORD_INCORRECTLY: 'Accounts or passwords incorrectly',
   REFRESH_TOKEN_REQUIED: 'RefreshToken is required',

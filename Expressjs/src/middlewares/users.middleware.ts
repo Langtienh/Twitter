@@ -7,8 +7,6 @@ import { verifyToken } from '@/utils/jwt'
 import { validate } from '@/utils/revalidator'
 import { config } from 'dotenv'
 import { checkSchema } from 'express-validator'
-import { JsonWebTokenError } from 'jsonwebtoken'
-import { capitalize } from 'lodash'
 
 config()
 const JWT_ACCESS_TOKEN_SECRET = process.env.JWT_ACCESS_TOKEN_SECRET as string
@@ -186,29 +184,43 @@ export const logoutValidator = validate(
         isString: true,
         custom: {
           options: async (value: string, { req }) => {
-            try {
-              await verifyToken({
-                token: value,
-                secretOrPublicKey: JWT_REFRESH_TOKEN_SECRET
+            await verifyToken({
+              token: value,
+              secretOrPublicKey: JWT_REFRESH_TOKEN_SECRET
+            })
+            const refreshTokenDoc =
+              await await databaseServices.refreshToken.findOne({
+                refreshToken: value
               })
-              const refreshTokenDoc =
-                await await databaseServices.refreshToken.findOne({
-                  refreshToken: value
-                })
-              if (!refreshTokenDoc) {
-                throw new ErrorWithStatus({
-                  status: HTTP_STATUS.UNAUTHORIZED,
-                  message: USERS_MESSAGE.USED_REFRESH_TOKEN_OR_NOT_EXIST
-                })
-              }
-            } catch (error) {
-              if (error instanceof JsonWebTokenError)
-                throw new ErrorWithStatus({
-                  message: capitalize(error.message),
-                  status: HTTP_STATUS.UNAUTHORIZED
-                })
-              throw error
+            if (!refreshTokenDoc) {
+              throw new ErrorWithStatus({
+                status: HTTP_STATUS.UNAUTHORIZED,
+                message: USERS_MESSAGE.USED_REFRESH_TOKEN_OR_NOT_EXIST
+              })
             }
+          }
+        }
+      }
+    },
+    ['body']
+  )
+)
+
+export const refreshTokenValidator = validate(
+  checkSchema(
+    {
+      refreshToken: {
+        notEmpty: {
+          errorMessage: USERS_MESSAGE.REFRESH_TOKEN_REQUIED
+        },
+        isString: true,
+        custom: {
+          options: async (value: string, { req }) => {
+            const decodedRefreshToken = await verifyToken({
+              token: value,
+              secretOrPublicKey: JWT_REFRESH_TOKEN_SECRET
+            })
+            req.decodedRefreshToken = decodedRefreshToken
           }
         }
       }

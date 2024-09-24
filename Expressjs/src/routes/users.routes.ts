@@ -3,6 +3,7 @@ import {
   getMeController,
   loginController,
   logoutController,
+  refreshTokenController,
   registerController,
   resendVerifyEmailController,
   resetPasswordController,
@@ -14,6 +15,7 @@ import {
   forgotPasswordValidator,
   loginValidator,
   logoutValidator,
+  refreshTokenValidator,
   registerValidator,
   resetPasswordValidator,
   verifyEmail,
@@ -54,6 +56,17 @@ usersRouter.post(
   accessTokenValidator,
   logoutValidator,
   wrapHandlers(logoutController)
+)
+/**
+ * Description: refresh token
+ * Path: /users/refresh-token
+ * Method: POST
+ * Body: {refreshToken: string}
+ */
+usersRouter.post(
+  '/refresh-token',
+  refreshTokenValidator,
+  wrapHandlers(refreshTokenController)
 )
 
 /**

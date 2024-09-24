@@ -15,6 +15,10 @@ export interface LogoutRequestBody {
   refreshToken: string
 }
 
+export interface RefreshTokenRequestBody {
+  refreshToken: string
+}
+
 export interface VerifyEmailRequestBody {
   emailVerifyToken: string
 }
