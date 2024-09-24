@@ -1,5 +1,5 @@
 import HTTP_STATUS from '@/constants/http.status'
-import { USERS_MESSAGE } from '@/constants/message'
+import USERS_MESSAGE from '@/constants/message/user.message'
 import { AccessTokenPayload, TokenPayLoad } from '@/models/dto/payload'
 import {
   ForgotPasswordRequestBody,
@@ -8,6 +8,7 @@ import {
   RefreshTokenRequestBody,
   RegisterRequestBody,
   ResetPasswordRequestBody,
+  UpdateMeRepuestBody,
   VerifyEmailRequestBody,
   VerifyForgotPasswordTokenRequestBody
 } from '@/models/dto/users.request'
@@ -25,7 +26,7 @@ export const registerController = async (
   res: Response
 ) => {
   const result = await userServices.register(req.body)
-  res.json({ message: USERS_MESSAGE.REGISTER_SUCCESS, result })
+  res.json({ message: USERS_MESSAGE.success.register, result })
 }
 
 export const loginController = async (
@@ -37,10 +38,10 @@ export const loginController = async (
   if (!result) {
     throw new ErrorWithStatus({
       status: HTTP_STATUS.NOT_FOUND,
-      message: USERS_MESSAGE.EMAIL_OR_PASSWORD_INCORRECTLY
+      message: USERS_MESSAGE.token.emailOrPasswordIncorrect
     })
   }
-  res.json({ message: USERS_MESSAGE.LOGIN_SUCCESS, result })
+  res.json({ message: USERS_MESSAGE.success.login, result })
 }
 
 export const logoutController = async (
@@ -49,7 +50,7 @@ export const logoutController = async (
 ) => {
   const logoutRequestBody = req.body
   await userServices.logout(logoutRequestBody)
-  res.json({ message: USERS_MESSAGE.LOGOUT_SUCCESS })
+  res.json({ message: USERS_MESSAGE.success.logout })
 }
 
 export const refreshTokenController = async (
@@ -60,8 +61,8 @@ export const refreshTokenController = async (
   const { userId } = req.decodedRefreshToken as TokenPayLoad
   const result = await userServices.refreshToken(userId, refreshToken)
   if (!result)
-    return res.status(404).json({ message: USERS_MESSAGE.USER_NOT_FOUND })
-  res.json({ message: USERS_MESSAGE.REFRESH_TOKEN_SUCCESS, result })
+    return res.status(404).json({ message: USERS_MESSAGE.account.notFound })
+  res.json({ message: USERS_MESSAGE.success.refreshToken, result })
 }
 
 export const verifyEmailController = async (
@@ -73,13 +74,15 @@ export const verifyEmailController = async (
     _id: new ObjectId(userId)
   })
   if (!user) {
-    return res.status(404).json({ message: USERS_MESSAGE.USER_NOT_FOUND })
+    return res.status(404).json({ message: USERS_MESSAGE.account.notFound })
   }
   if (!user.emailVerifyToken) {
-    return res.json({ message: USERS_MESSAGE.EMAIL_VERIFiED_BEFORE })
+    return res.json({
+      message: USERS_MESSAGE.token.verifyEmailToken.verifiedBefore
+    })
   }
   const result = await userServices.verifyEmail(userId)
-  res.json({ message: USERS_MESSAGE.EMAIL_VERIFY_SUCCESS, result })
+  res.json({ message: USERS_MESSAGE.success.emailVerify, result })
 }
 
 export const resendVerifyEmailController = async (
@@ -91,13 +94,15 @@ export const resendVerifyEmailController = async (
     _id: new ObjectId(userId)
   })
   if (!user) {
-    return res.status(404).json({ message: USERS_MESSAGE.USER_NOT_FOUND })
+    return res.status(404).json({ message: USERS_MESSAGE.account.notFound })
   }
   if (!user.emailVerifyToken) {
-    return res.json({ message: USERS_MESSAGE.EMAIL_VERIFiED_BEFORE })
+    return res.json({
+      message: USERS_MESSAGE.token.verifyEmailToken.verifiedBefore
+    })
   }
   await userServices.resendVerifyEmail(userId)
-  res.json({ message: USERS_MESSAGE.RESEND_EMAIL_VERIFY_SUCCESS })
+  res.json({ message: USERS_MESSAGE.success.resendEmailVerify })
 }
 
 export const forgotPasswordController = async (
@@ -107,9 +112,9 @@ export const forgotPasswordController = async (
   const { email } = req.body
   const user = await databaseServices.users.findOne({ email })
   if (!user)
-    return res.status(404).json({ message: USERS_MESSAGE.USER_NOT_FOUND })
+    return res.status(404).json({ message: USERS_MESSAGE.account.notFound })
   await userServices.forgotPassword(user._id.toString())
-  res.json({ message: USERS_MESSAGE.SEND_LINK_RESET_PASSWORD_SUCCESS })
+  res.json({ message: USERS_MESSAGE.success.resetPassword })
 }
 
 export const verifyForgotPasswordTokenController = async (
@@ -119,8 +124,8 @@ export const verifyForgotPasswordTokenController = async (
   const { forgotPasswordToken } = req.body
   const user = await databaseServices.users.findOne({ forgotPasswordToken })
   if (!user)
-    return res.status(404).json({ message: USERS_MESSAGE.USER_NOT_FOUND })
-  res.json({ message: USERS_MESSAGE.FORGOT_PASSWORD_EXIST })
+    return res.status(404).json({ message: USERS_MESSAGE.account.notFound })
+  res.json({ message: USERS_MESSAGE.passwordReset.forgotPasswordExist })
 }
 
 export const resetPasswordController = async (
@@ -130,14 +135,14 @@ export const resetPasswordController = async (
   const { forgotPasswordToken, password } = req.body
   const user = await databaseServices.users.findOne({ forgotPasswordToken })
   if (!user)
-    return res.status(404).json({ message: USERS_MESSAGE.USER_NOT_FOUND })
+    return res.status(404).json({ message: USERS_MESSAGE.account.notFound })
   const result = await userServices.resetPassword(
     user._id,
     password,
     user.verify,
     user.role
   )
-  res.json({ message: USERS_MESSAGE.RESET_PASSWORD_SUCCESS, result })
+  res.json({ message: USERS_MESSAGE.success.resetPassword, result })
 }
 
 export const getMeController = async (
@@ -147,10 +152,19 @@ export const getMeController = async (
   const { userId } = req.decodedAuthorization as AccessTokenPayload
   const user = await userServices.getUserById(userId)
   if (!user) {
-    return res.status(404).json({ message: USERS_MESSAGE.USER_NOT_FOUND })
+    return res.status(404).json({ message: USERS_MESSAGE.account.notFound })
   }
   return res.json({
-    message: USERS_MESSAGE.GET_USER_SUCCESS,
+    message: USERS_MESSAGE.success.getUser,
     result: cleanObject(user)
   })
+}
+
+export const updateMeController = async (
+  req: Request<ParamsDictionary, any, UpdateMeRepuestBody>,
+  res: Response
+) => {
+  const { userId } = req.decodedAuthorization as AccessTokenPayload
+  const result = await userServices.updateMe(userId, req.body)
+  res.json({ message: USERS_MESSAGE.success.updateMe, result })
 }

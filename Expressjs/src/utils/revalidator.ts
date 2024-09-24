@@ -1,5 +1,5 @@
 import HTTP_STATUS from '@/constants/http.status'
-import { USERS_MESSAGE } from '@/constants/message'
+import USERS_MESSAGE from '@/constants/message/user.message'
 import { EntityError, ErrorWithStatus } from '@/models/schemas/Error'
 import express from 'express'
 import { ValidationChain, validationResult } from 'express-validator'
@@ -35,7 +35,7 @@ export const validate = (
     // trả lỗi entity
     next(
       new EntityError({
-        message: USERS_MESSAGE.VALIDATION_ERROR,
+        message: USERS_MESSAGE.validation.default,
         errors: errorObject
       })
     )

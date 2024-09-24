@@ -7,6 +7,7 @@ import {
   registerController,
   resendVerifyEmailController,
   resetPasswordController,
+  updateMeController,
   verifyEmailController,
   verifyForgotPasswordTokenController
 } from '@/controllers/users.controllers'
@@ -18,13 +19,14 @@ import {
   refreshTokenValidator,
   registerValidator,
   resetPasswordValidator,
+  updateUserValidator,
   verifyEmail,
-  verifyForgotPasswordTokenValidator
+  verifyForgotPasswordTokenValidator,
+  verifyUser
 } from '@/middlewares/users.middleware'
 import { wrapHandlers } from '@/utils/handlers'
 import { Router } from 'express'
 const usersRouter = Router()
-
 /**
  * Description: register user
  * Path: /users/register
@@ -139,6 +141,13 @@ usersRouter.post(
  */
 usersRouter.get('/me', accessTokenValidator, wrapHandlers(getMeController))
 
-// usersRouter.
+/**
+ * Description: result user info
+ * Path: /users/me
+ * Method: GET
+ * Header?:  {Authorization: Bearer <accessToken> }
+ * Body: UserSchema
+ */
+usersRouter.put('/me', verifyUser, updateUserValidator, updateMeController)
 
 export default usersRouter

@@ -2,16 +2,23 @@ import { TokenType, UserRole, UserVerifyStatus } from '@/constants/enum'
 import {
   LoginRequestBody,
   LogoutRequestBody,
-  RegisterRequestBody
+  RegisterRequestBody,
+  UpdateMeRepuestBody
 } from '@/models/dto/users.request'
 import RefreshToken from '@/models/schemas/RefreshToken.schema'
 import User from '@/models/schemas/Users.schema'
 import { hashPassword } from '@/utils/crypto'
 import { signToken } from '@/utils/jwt'
 import { config } from 'dotenv'
-import { ObjectId } from 'mongodb'
+import { Document, ObjectId, WithId } from 'mongodb'
 import databaseServices from './database.servicers'
 config()
+
+const projection: Document = {
+  password: 0,
+  emailVerifyToken: 0,
+  forgotPasswordToken: 0
+}
 
 const JWT_ACCESS_TOKEN_SECRET = process.env.JWT_ACCESS_TOKEN_SECRET as string
 const JWT_REFRESH_TOKEN_SECRET = process.env.JWT_REFRESH_TOKEN_SECRET as string
@@ -256,14 +263,49 @@ class UserServices {
         _id: new ObjectId(userId)
       },
       {
-        projection: {
-          password: 0,
-          emailVerifyToken: 0,
-          forgotPasswordToken: 0
-        }
+        projection
       }
     )
     return user
+  }
+
+  async updateMe(userId: string, payload: UpdateMeRepuestBody) {
+    let { dateOfBirth, ..._payload } = payload
+    let result: WithId<User> | null = null
+    if (dateOfBirth)
+      result = await databaseServices.users.findOneAndUpdate(
+        { _id: new ObjectId(userId) },
+        {
+          $set: {
+            ..._payload,
+            dateOfBirth: new Date(dateOfBirth)
+          },
+          $currentDate: {
+            updateAt: true
+          }
+        },
+        {
+          returnDocument: 'after',
+          projection
+        }
+      )
+    else
+      result = await databaseServices.users.findOneAndUpdate(
+        { _id: new ObjectId(userId) },
+        {
+          $set: {
+            ..._payload
+          },
+          $currentDate: {
+            updateAt: true
+          }
+        },
+        {
+          returnDocument: 'after',
+          projection
+        }
+      )
+    return result
   }
 }
 
