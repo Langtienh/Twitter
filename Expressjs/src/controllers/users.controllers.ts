@@ -27,7 +27,7 @@ export const register = async (
   res: Response
 ) => {
   const result = await userServices.register(req.body)
-  res.json({ message: USERS_MESSAGE.success.register, result })
+  res.json({ message: USERS_MESSAGE.api.register.success, result })
 }
 
 export const login = async (
@@ -39,10 +39,10 @@ export const login = async (
   if (!result) {
     throw new ErrorWithStatus({
       status: HTTP_STATUS.NOT_FOUND,
-      message: USERS_MESSAGE.token.emailOrPasswordIncorrect
+      message: USERS_MESSAGE.api.login.emailOrPasswordIncorrect
     })
   }
-  res.json({ message: USERS_MESSAGE.success.login, result })
+  res.json({ message: USERS_MESSAGE.api.login.success, result })
 }
 
 export const logout = async (
@@ -51,7 +51,7 @@ export const logout = async (
 ) => {
   const logoutRequestBody = req.body
   await userServices.logout(logoutRequestBody)
-  res.json({ message: USERS_MESSAGE.success.logout })
+  res.json({ message: USERS_MESSAGE.api.logout.success })
 }
 
 export const refreshToken = async (
@@ -61,9 +61,8 @@ export const refreshToken = async (
   const { refreshToken } = req.body
   const { userId } = req.decodedRefreshToken as TokenPayLoad
   const result = await userServices.refreshToken(userId, refreshToken)
-  if (!result)
-    return res.status(404).json({ message: USERS_MESSAGE.account.notFound })
-  res.json({ message: USERS_MESSAGE.success.refreshToken, result })
+  if (!result) return res.status(404).json({ message: USERS_MESSAGE.notFound })
+  res.json({ message: USERS_MESSAGE.api.refreshToken.success, result })
 }
 
 export const verifyEmail = async (
@@ -75,15 +74,15 @@ export const verifyEmail = async (
     _id: new ObjectId(userId)
   })
   if (!user) {
-    return res.status(404).json({ message: USERS_MESSAGE.account.notFound })
+    return res.status(404).json({ message: USERS_MESSAGE.notFound })
   }
   if (!user.emailVerifyToken) {
     return res.json({
-      message: USERS_MESSAGE.token.verifyEmailToken.verifiedBefore
+      message: USERS_MESSAGE.field.verifyEmailToken.verifiedBefore
     })
   }
   const result = await userServices.verifyEmail(userId)
-  res.json({ message: USERS_MESSAGE.success.emailVerify, result })
+  res.json({ message: USERS_MESSAGE.api.emailVerify.success, result })
 }
 
 export const resendVerifyEmail = async (
@@ -95,15 +94,15 @@ export const resendVerifyEmail = async (
     _id: new ObjectId(userId)
   })
   if (!user) {
-    return res.status(404).json({ message: USERS_MESSAGE.account.notFound })
+    return res.status(404).json({ message: USERS_MESSAGE.notFound })
   }
   if (!user.emailVerifyToken) {
     return res.json({
-      message: USERS_MESSAGE.token.verifyEmailToken.verifiedBefore
+      message: USERS_MESSAGE.field.verifyEmailToken.verifiedBefore
     })
   }
   await userServices.resendVerifyEmail(userId)
-  res.json({ message: USERS_MESSAGE.success.resendEmailVerify })
+  res.json({ message: USERS_MESSAGE.api.resendEmailVerify.success })
 }
 
 export const forgotPassword = async (
@@ -112,10 +111,9 @@ export const forgotPassword = async (
 ) => {
   const { email } = req.body
   const user = await databaseServices.users.findOne({ email })
-  if (!user)
-    return res.status(404).json({ message: USERS_MESSAGE.account.notFound })
+  if (!user) return res.status(404).json({ message: USERS_MESSAGE.notFound })
   await userServices.forgotPassword(user._id.toString())
-  res.json({ message: USERS_MESSAGE.success.resetPassword })
+  res.json({ message: USERS_MESSAGE.api.resetPassword.success })
 }
 
 export const verifyForgotPasswordToken = async (
@@ -124,9 +122,8 @@ export const verifyForgotPasswordToken = async (
 ) => {
   const { forgotPasswordToken } = req.body
   const user = await databaseServices.users.findOne({ forgotPasswordToken })
-  if (!user)
-    return res.status(404).json({ message: USERS_MESSAGE.account.notFound })
-  res.json({ message: USERS_MESSAGE.passwordReset.forgotPasswordExist })
+  if (!user) return res.status(404).json({ message: USERS_MESSAGE.notFound })
+  res.json({ message: USERS_MESSAGE.notFound })
 }
 
 export const resetPassword = async (
@@ -135,15 +132,14 @@ export const resetPassword = async (
 ) => {
   const { forgotPasswordToken, password } = req.body
   const user = await databaseServices.users.findOne({ forgotPasswordToken })
-  if (!user)
-    return res.status(404).json({ message: USERS_MESSAGE.account.notFound })
+  if (!user) return res.status(404).json({ message: USERS_MESSAGE.notFound })
   const result = await userServices.resetPassword(
     user._id,
     password,
     user.verify,
     user.role
   )
-  res.json({ message: USERS_MESSAGE.success.resetPassword, result })
+  res.json({ message: USERS_MESSAGE.api.resetPassword.success, result })
 }
 
 export const getMe = async (
@@ -153,10 +149,10 @@ export const getMe = async (
   const { userId } = req.decodedAuthorization as AccessTokenPayload
   const user = await userServices.getUserById(userId)
   if (!user) {
-    return res.status(404).json({ message: USERS_MESSAGE.account.notFound })
+    return res.status(404).json({ message: USERS_MESSAGE.notFound })
   }
   return res.json({
-    message: USERS_MESSAGE.success.getUser,
+    message: USERS_MESSAGE.api.getUser.success,
     result: cleanObject(user)
   })
 }
@@ -167,7 +163,7 @@ export const updateMe = async (
 ) => {
   const { userId } = req.decodedAuthorization as AccessTokenPayload
   const result = await userServices.updateMe(userId, req.body)
-  res.json({ message: USERS_MESSAGE.success.updateMe, result })
+  res.json({ message: USERS_MESSAGE.api.updateMe.success, result })
 }
 
 export const follower = async (
@@ -179,7 +175,7 @@ export const follower = async (
   if (userId === followedUserId)
     throw new ErrorWithStatus({
       status: HTTP_STATUS.BAD_REQUEST,
-      message: USERS_MESSAGE.follower.cannotFollow
+      message: USERS_MESSAGE.api.follower.cannotFollow
     })
   const result = await userServices.follower(
     new ObjectId(userId),

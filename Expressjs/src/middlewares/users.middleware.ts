@@ -1,6 +1,7 @@
 import { UserVerifyStatus } from '@/constants/enum'
 import HTTP_STATUS from '@/constants/http.status'
 import USERS_MESSAGE from '@/constants/message/user.message'
+import { usernameRegexr } from '@/constants/regexr'
 import { AccessTokenPayload } from '@/models/dto/payload'
 import { ErrorWithStatus } from '@/models/schemas/Error'
 import databaseServices from '@/services/database.servicers'
@@ -20,7 +21,7 @@ const JWT_FORGOT_PASSWORD_TOKEN_SECRET = process.env
 
 const passwordSchema: ParamSchema = {
   notEmpty: {
-    errorMessage: USERS_MESSAGE.validation.password.required
+    errorMessage: USERS_MESSAGE.field.password.required
   },
   isString: true,
   isLength: {
@@ -28,7 +29,7 @@ const passwordSchema: ParamSchema = {
       min: 6,
       max: 63
     },
-    errorMessage: USERS_MESSAGE.validation.password.length
+    errorMessage: USERS_MESSAGE.field.password.length
   },
   isStrongPassword: {
     options: {
@@ -38,13 +39,13 @@ const passwordSchema: ParamSchema = {
       minUppercase: 1,
       minSymbols: 1
     },
-    errorMessage: USERS_MESSAGE.validation.password.strengthError
+    errorMessage: USERS_MESSAGE.field.password.strengthError
   }
 }
 
 const nameSchema: ParamSchema = {
   notEmpty: {
-    errorMessage: USERS_MESSAGE.validation.name.required
+    errorMessage: USERS_MESSAGE.field.name.required
   },
   isString: true,
   trim: true,
@@ -53,16 +54,16 @@ const nameSchema: ParamSchema = {
       min: 1,
       max: 63
     },
-    errorMessage: USERS_MESSAGE.validation.name.length
+    errorMessage: USERS_MESSAGE.field.name.length
   }
 }
 
 const newEmailSchema: ParamSchema = {
   notEmpty: {
-    errorMessage: USERS_MESSAGE.validation.email.required
+    errorMessage: USERS_MESSAGE.field.email.required
   },
   isEmail: {
-    errorMessage: USERS_MESSAGE.validation.email.invalid
+    errorMessage: USERS_MESSAGE.field.email.invalid
   },
   trim: true,
   isLength: {
@@ -70,15 +71,15 @@ const newEmailSchema: ParamSchema = {
       min: 1,
       max: 63
     },
-    errorMessage: USERS_MESSAGE.validation.email.length
+    errorMessage: USERS_MESSAGE.field.email.length
   },
   custom: {
     options: async (value) => {
-      const user = await userServices.checkEmailExist(value)
+      const user = await userServices.getUserByEmail(value)
       if (user) {
         throw new ErrorWithStatus({
           status: HTTP_STATUS.UNAUTHORIZED,
-          message: USERS_MESSAGE.validation.email.alreadyExists
+          message: USERS_MESSAGE.field.email.alreadyExists
         })
       }
       return true
@@ -88,10 +89,10 @@ const newEmailSchema: ParamSchema = {
 
 const emailSchema: ParamSchema = {
   notEmpty: {
-    errorMessage: USERS_MESSAGE.validation.email.required
+    errorMessage: USERS_MESSAGE.field.email.required
   },
   isEmail: {
-    errorMessage: USERS_MESSAGE.validation.email.invalid
+    errorMessage: USERS_MESSAGE.field.email.invalid
   },
   trim: true,
   isLength: {
@@ -99,18 +100,18 @@ const emailSchema: ParamSchema = {
       min: 1,
       max: 63
     },
-    errorMessage: USERS_MESSAGE.validation.email.length
+    errorMessage: USERS_MESSAGE.field.email.length
   }
 }
 
 const confirmPasswordSchema: ParamSchema = {
   isString: {
-    errorMessage: USERS_MESSAGE.validation.password.confirmation.required
+    errorMessage: USERS_MESSAGE.field.password.confirmation.required
   },
   custom: {
     options: (value, { req }) => {
       if (value !== req.body.password) {
-        throw new Error(USERS_MESSAGE.validation.password.confirmation.mismatch)
+        throw new Error(USERS_MESSAGE.field.password.confirmation.mismatch)
       }
       return true
     }
@@ -119,31 +120,45 @@ const confirmPasswordSchema: ParamSchema = {
 
 const dateOfBirthSchema: ParamSchema = {
   notEmpty: {
-    errorMessage: USERS_MESSAGE.validation.dateOfBirth.required
+    errorMessage: USERS_MESSAGE.field.dateOfBirth.required
   },
-  isDate: { errorMessage: USERS_MESSAGE.validation.dateOfBirth.invalid }
+  isDate: { errorMessage: USERS_MESSAGE.field.dateOfBirth.invalid }
 }
 
 const userIdSchema: ParamSchema = {
   notEmpty: {
-    errorMessage: USERS_MESSAGE.follower.field.followedUserId.require
+    errorMessage: USERS_MESSAGE.field.followedUserId.require
   },
   custom: {
     options: async (value: string) => {
       if (!ObjectId.isValid(value)) {
         throw new ErrorWithStatus({
           status: HTTP_STATUS.NOT_FOUND,
-          message: USERS_MESSAGE.account.notFound
+          message: USERS_MESSAGE.notFound
         })
       }
       const user = await userServices.getUserById(value)
       if (!user) {
         throw new ErrorWithStatus({
           status: HTTP_STATUS.NOT_FOUND,
-          message: USERS_MESSAGE.account.notFound
+          message: USERS_MESSAGE.notFound
         })
       }
       return true
+    }
+  }
+}
+
+const usernameSchema: ParamSchema = {
+  optional: true,
+  trim: true,
+  isString: true,
+  custom: {
+    options: async (value: string) => {
+      if (!usernameRegexr.test(value))
+        throw new Error(USERS_MESSAGE.field.username.regexError)
+      const user = await userServices.getUserByUserName(value)
+      if (user) throw new Error(USERS_MESSAGE.field.username.isExist)
     }
   }
 }
@@ -175,13 +190,13 @@ export const accessToken = validate(
   checkSchema(
     {
       Authorization: {
-        notEmpty: { errorMessage: USERS_MESSAGE.token.accessToken.required },
+        notEmpty: { errorMessage: USERS_MESSAGE.field.accessToken.required },
         isString: true,
         custom: {
           options: async (value: string, { req }) => {
             const accessToken = value.replace('Bearer ', '')
             if (accessToken === '')
-              throw new Error(USERS_MESSAGE.token.accessToken.required)
+              throw new Error(USERS_MESSAGE.field.accessToken.required)
             const decodedAuthorization = await verifyToken({
               token: accessToken,
               secretOrPublicKey: JWT_ACCESS_TOKEN_SECRET
@@ -200,7 +215,7 @@ export const logout = validate(
     {
       refreshToken: {
         notEmpty: {
-          errorMessage: USERS_MESSAGE.token.refreshToken.required
+          errorMessage: USERS_MESSAGE.field.refreshToken.required
         },
         isString: true,
         custom: {
@@ -216,7 +231,7 @@ export const logout = validate(
             if (!refreshTokenDoc) {
               throw new ErrorWithStatus({
                 status: HTTP_STATUS.UNAUTHORIZED,
-                message: USERS_MESSAGE.token.usedOrNotExist
+                message: USERS_MESSAGE.field.verifyEmailToken.usedOrNotExist
               })
             }
           }
@@ -232,7 +247,7 @@ export const refreshToken = validate(
     {
       refreshToken: {
         notEmpty: {
-          errorMessage: USERS_MESSAGE.token.refreshToken.required
+          errorMessage: USERS_MESSAGE.field.refreshToken.required
         },
         isString: true,
         custom: {
@@ -255,7 +270,7 @@ export const verifyEmail = validate(
     {
       emailVerifyToken: {
         notEmpty: {
-          errorMessage: USERS_MESSAGE.token.verifyEmailToken.required
+          errorMessage: USERS_MESSAGE.field.verifyEmailToken.required
         },
         isString: true,
         custom: {
@@ -287,7 +302,7 @@ export const verifyForgotPasswordToken = validate(
     {
       forgotPasswordToken: {
         notEmpty: {
-          errorMessage: USERS_MESSAGE.passwordReset.forgotPasswordRequired
+          errorMessage: USERS_MESSAGE.field.forgotPassword.require
         },
         trim: true,
         custom: {
@@ -309,7 +324,7 @@ export const resetPassword = validate(
     {
       forgotPasswordToken: {
         notEmpty: {
-          errorMessage: USERS_MESSAGE.passwordReset.forgotPasswordRequired
+          errorMessage: USERS_MESSAGE.field.forgotPassword.require
         },
         trim: true,
         custom: {
@@ -334,13 +349,13 @@ export const verifyUser = validate(
   checkSchema(
     {
       Authorization: {
-        notEmpty: { errorMessage: USERS_MESSAGE.token.accessToken.required },
+        notEmpty: { errorMessage: USERS_MESSAGE.field.accessToken.required },
         isString: true,
         custom: {
           options: async (value: string, { req }) => {
             const accessToken = value.replace('Bearer ', '')
             if (accessToken === '')
-              throw new Error(USERS_MESSAGE.token.accessToken.required)
+              throw new Error(USERS_MESSAGE.field.accessToken.required)
             const decodedAuthorization = await verifyToken({
               token: accessToken,
               secretOrPublicKey: JWT_ACCESS_TOKEN_SECRET
@@ -349,12 +364,12 @@ export const verifyUser = validate(
             if (verify === UserVerifyStatus.Unverify) {
               throw new ErrorWithStatus({
                 status: HTTP_STATUS.FORBIDDEN,
-                message: USERS_MESSAGE.account.unverified
+                message: USERS_MESSAGE.field.verify.unverified
               })
             } else if (verify === UserVerifyStatus.Banbed) {
               throw new ErrorWithStatus({
                 status: HTTP_STATUS.LOCKED,
-                message: USERS_MESSAGE.account.locked
+                message: USERS_MESSAGE.field.verify.locked
               })
             }
             req.decodedAuthorization = decodedAuthorization
@@ -380,7 +395,7 @@ export const updateUser = validate(
           options: {
             max: 200
           },
-          errorMessage: USERS_MESSAGE.validation.bio.isLength
+          errorMessage: USERS_MESSAGE.field.bio.isLength
         }
       },
       localtion: {
@@ -391,7 +406,7 @@ export const updateUser = validate(
           options: {
             max: 200
           },
-          errorMessage: USERS_MESSAGE.validation.location.isLength
+          errorMessage: USERS_MESSAGE.field.location.isLength
         }
       },
       website: {
@@ -402,21 +417,10 @@ export const updateUser = validate(
           options: {
             max: 200
           },
-          errorMessage: USERS_MESSAGE.validation.website.isLength
+          errorMessage: USERS_MESSAGE.field.website.isLength
         }
       },
-      username: {
-        optional: true,
-        isString: true,
-        trim: true,
-        isLength: {
-          options: {
-            min: 1,
-            max: 50
-          },
-          errorMessage: USERS_MESSAGE.validation.username.isLength
-        }
-      },
+      username: usernameSchema,
       coverPhoto: {
         optional: true,
         isString: true,
@@ -426,7 +430,7 @@ export const updateUser = validate(
             min: 1,
             max: 200
           },
-          errorMessage: USERS_MESSAGE.validation.coverPhoto.isLength
+          errorMessage: USERS_MESSAGE.field.coverPhoto.isLength
         }
       },
       avatar: {
@@ -438,7 +442,7 @@ export const updateUser = validate(
             min: 1,
             max: 200
           },
-          errorMessage: USERS_MESSAGE.validation.avatar.isLength
+          errorMessage: USERS_MESSAGE.field.avatar.isLength
         }
       }
     },

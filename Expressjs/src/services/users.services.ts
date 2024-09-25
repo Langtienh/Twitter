@@ -12,11 +12,11 @@ import User from '@/models/schemas/Users.schema'
 import { hashPassword } from '@/utils/crypto'
 import { signToken } from '@/utils/jwt'
 import { config } from 'dotenv'
-import { Document, ObjectId, WithId } from 'mongodb'
+import { Document, ObjectId } from 'mongodb'
 import databaseServices from './database.servicers'
 config()
 
-const projection: Document = {
+const userProjection: Document = {
   password: 0,
   emailVerifyToken: 0,
   forgotPasswordToken: 0
@@ -101,11 +101,6 @@ class UserServices {
       this.signAccessToken(userId, verify, role),
       this.signRefreshToken(userId)
     ])
-  }
-
-  async checkEmailExist(email: string) {
-    const user = await databaseServices.users.findOne({ email })
-    return user
   }
 
   private async insertRefreshToken(
@@ -258,55 +253,54 @@ class UserServices {
     )
     return { accessToken, refreshToken }
   }
-
-  async getUserById(userId: string) {
-    const user = await databaseServices.users.findOne(
-      {
-        _id: new ObjectId(userId)
-      },
-      {
-        projection
-      }
-    )
-    return user
+  getUser({
+    email,
+    _id,
+    username
+  }: {
+    email?: string
+    username?: string
+    _id?: ObjectId
+  }) {
+    let data = {}
+    if (email) data = { email }
+    if (username) data = { ...data, username }
+    if (_id) data = { ...data, _id }
+    return databaseServices.users.findOne(data, {
+      projection: userProjection
+    })
+  }
+  getUserById(userId: string) {
+    return this.getUser({ _id: new ObjectId(userId) })
   }
 
-  async updateMe(userId: string, payload: UpdateMeRepuestBody) {
-    let { dateOfBirth, ..._payload } = payload
-    let result: WithId<User> | null = null
-    if (dateOfBirth)
-      result = await databaseServices.users.findOneAndUpdate(
-        { _id: new ObjectId(userId) },
-        {
-          $set: {
-            ..._payload,
-            dateOfBirth: new Date(dateOfBirth)
-          },
-          $currentDate: {
-            updateAt: true
-          }
-        },
-        {
-          returnDocument: 'after',
-          projection
+  getUserByEmail(email: string) {
+    return this.getUser({ email })
+  }
+
+  getUserByUserName(username: string) {
+    return this.getUser({ username })
+  }
+
+  async updateMe(userId: string, updateMeRepuestBody: UpdateMeRepuestBody) {
+    const { dateOfBirth, ...payload } = updateMeRepuestBody
+    const data = {
+      ...payload,
+      dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined
+    }
+    const result = await databaseServices.users.findOneAndUpdate(
+      { _id: new ObjectId(userId) },
+      {
+        $set: data,
+        $currentDate: {
+          updateAt: true
         }
-      )
-    else
-      result = await databaseServices.users.findOneAndUpdate(
-        { _id: new ObjectId(userId) },
-        {
-          $set: {
-            ..._payload
-          },
-          $currentDate: {
-            updateAt: true
-          }
-        },
-        {
-          returnDocument: 'after',
-          projection
-        }
-      )
+      },
+      {
+        returnDocument: 'after',
+        projection: userProjection
+      }
+    )
     return result
   }
 
@@ -321,10 +315,10 @@ class UserServices {
     })
     if (isFollowed)
       return {
-        message: USERS_MESSAGE.follower.followed
+        message: USERS_MESSAGE.api.follower.followed
       }
     await databaseServices.follower.insertOne(newFollower)
-    return { message: USERS_MESSAGE.follower.success }
+    return { message: USERS_MESSAGE.api.follower.success }
   }
 
   async unfollower(userId: ObjectId, followedUserId: ObjectId) {
@@ -332,7 +326,7 @@ class UserServices {
       userId,
       followedUserId
     })
-    return { message: USERS_MESSAGE.follower.unfollowSuccess }
+    return { message: USERS_MESSAGE.api.follower.unfollowSuccess }
   }
 }
 
