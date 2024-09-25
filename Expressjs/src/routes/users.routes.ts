@@ -130,7 +130,7 @@ usersRouter.get(
 /**
  * Description: result user info
  * Path: /users/me
- * Method: GET
+ * Method: PUT
  * Header?:  {Authorization: Bearer <accessToken> }
  * Body: UserSchema
  */
@@ -140,6 +140,33 @@ usersRouter.put(
   userValidator.updateUser,
   userFilter.updateMe,
   wrapHandlers(userController.updateMe)
+)
+
+/**
+ * Description: create follower
+ * Path: /users/follow
+ * Method: POST
+ * Header?:  {Authorization: Bearer <accessToken> }
+ * Body: {followedUserId: string}
+ */
+usersRouter.post(
+  '/follow',
+  userValidator.verifyUser,
+  userValidator.follower,
+  wrapHandlers(userController.follower)
+)
+
+/**
+ * Description: delete follower
+ * Path: /users/follow/:user-id:
+ * Method: DELETE
+ * Header?:  {Authorization: Bearer <accessToken> }
+ */
+usersRouter.delete(
+  '/follow/:followedUserId',
+  userValidator.verifyUser,
+  userValidator.unfollower,
+  wrapHandlers(userController.unfollower)
 )
 
 export default usersRouter

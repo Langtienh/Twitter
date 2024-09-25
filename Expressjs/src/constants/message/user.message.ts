@@ -89,6 +89,24 @@ const USERS_MESSAGE = {
   passwordReset: {
     forgotPasswordExist: 'Forgot password request already exists', // Yêu cầu quên mật khẩu đã tồn tại
     forgotPasswordRequired: 'Forgot password is required' // Quên mật khẩu là bắt buộc
+  },
+
+  follower: {
+    followed: 'Followed by before',
+    success: 'Follow successfully',
+    unfollowSuccess: 'Unfollow successfully',
+    faild: 'Follow faild',
+    notExist: 'User not found',
+    cannotFollow: "Can't follow yourself",
+    field: {
+      followedUserId: {
+        require: 'FollowedUserId is require'
+      }
+    }
+  },
+  userId: {
+    require: 'UserId is require',
+    invalid: 'UserId invalid'
   }
 } as const
 

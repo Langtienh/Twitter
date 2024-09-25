@@ -1,10 +1,12 @@
 import { TokenType, UserRole, UserVerifyStatus } from '@/constants/enum'
+import USERS_MESSAGE from '@/constants/message/user.message'
 import {
   LoginRequestBody,
   LogoutRequestBody,
   RegisterRequestBody,
   UpdateMeRepuestBody
 } from '@/models/dto/users.request'
+import Follower from '@/models/schemas/Follower.schema'
 import RefreshToken from '@/models/schemas/RefreshToken.schema'
 import User from '@/models/schemas/Users.schema'
 import { hashPassword } from '@/utils/crypto'
@@ -306,6 +308,31 @@ class UserServices {
         }
       )
     return result
+  }
+
+  async follower(userId: ObjectId, followedUserId: ObjectId) {
+    const newFollower = new Follower({
+      followedUserId,
+      userId
+    })
+    const isFollowed = await databaseServices.follower.findOne({
+      userId,
+      followedUserId
+    })
+    if (isFollowed)
+      return {
+        message: USERS_MESSAGE.follower.followed
+      }
+    await databaseServices.follower.insertOne(newFollower)
+    return { message: USERS_MESSAGE.follower.success }
+  }
+
+  async unfollower(userId: ObjectId, followedUserId: ObjectId) {
+    await databaseServices.follower.deleteOne({
+      userId,
+      followedUserId
+    })
+    return { message: USERS_MESSAGE.follower.unfollowSuccess }
   }
 }
 

@@ -2,6 +2,7 @@ import HTTP_STATUS from '@/constants/http.status'
 import USERS_MESSAGE from '@/constants/message/user.message'
 import { AccessTokenPayload, TokenPayLoad } from '@/models/dto/payload'
 import {
+  FollowRepuestBody,
   ForgotPasswordRequestBody,
   LoginRequestBody,
   LogoutRequestBody,
@@ -169,6 +170,34 @@ export const updateMe = async (
   res.json({ message: USERS_MESSAGE.success.updateMe, result })
 }
 
+export const follower = async (
+  req: Request<ParamsDictionary, any, FollowRepuestBody>,
+  res: Response
+) => {
+  const { userId } = req.decodedAuthorization as AccessTokenPayload
+  const { followedUserId } = req.body
+  if (userId === followedUserId)
+    throw new ErrorWithStatus({
+      status: HTTP_STATUS.BAD_REQUEST,
+      message: USERS_MESSAGE.follower.cannotFollow
+    })
+  const result = await userServices.follower(
+    new ObjectId(userId),
+    new ObjectId(followedUserId)
+  )
+  res.json(result)
+}
+
+export const unfollower = async (req: Request, res: Response) => {
+  const { userId } = req.decodedAuthorization as AccessTokenPayload
+  const { followedUserId } = req.params
+  const result = await userServices.unfollower(
+    new ObjectId(userId),
+    new ObjectId(followedUserId)
+  )
+  res.json(result)
+}
+
 const userController = {
   forgotPassword,
   getMe,
@@ -180,7 +209,9 @@ const userController = {
   resetPassword,
   updateMe,
   verifyEmail,
-  verifyForgotPasswordToken
+  verifyForgotPasswordToken,
+  follower,
+  unfollower
 }
 
 export default userController

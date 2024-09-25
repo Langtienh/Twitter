@@ -1,3 +1,5 @@
+import { ParamsDictionary } from 'express-serve-static-core'
+
 export interface RegisterRequestBody {
   name: string
   email: string
@@ -46,4 +48,12 @@ export interface UpdateMeRepuestBody {
   username?: string
   coverPhoto?: string
   avatar?: string
+}
+
+export interface FollowRepuestBody {
+  followedUserId: string
+}
+
+export interface UnFollowRepuestParam extends ParamsDictionary {
+  followedUserId: string
 }

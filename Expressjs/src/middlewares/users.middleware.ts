@@ -9,6 +9,7 @@ import { verifyToken } from '@/utils/jwt'
 import { validate } from '@/utils/revalidator'
 import { config } from 'dotenv'
 import { checkSchema, ParamSchema } from 'express-validator'
+import { ObjectId } from 'mongodb'
 
 config()
 const JWT_ACCESS_TOKEN_SECRET = process.env.JWT_ACCESS_TOKEN_SECRET as string
@@ -121,6 +122,30 @@ const dateOfBirthSchema: ParamSchema = {
     errorMessage: USERS_MESSAGE.validation.dateOfBirth.required
   },
   isDate: { errorMessage: USERS_MESSAGE.validation.dateOfBirth.invalid }
+}
+
+const userIdSchema: ParamSchema = {
+  notEmpty: {
+    errorMessage: USERS_MESSAGE.follower.field.followedUserId.require
+  },
+  custom: {
+    options: async (value: string) => {
+      if (!ObjectId.isValid(value)) {
+        throw new ErrorWithStatus({
+          status: HTTP_STATUS.NOT_FOUND,
+          message: USERS_MESSAGE.account.notFound
+        })
+      }
+      const user = await userServices.getUserById(value)
+      if (!user) {
+        throw new ErrorWithStatus({
+          status: HTTP_STATUS.NOT_FOUND,
+          message: USERS_MESSAGE.account.notFound
+        })
+      }
+      return true
+    }
+  }
 }
 
 export const register = validate(
@@ -421,6 +446,24 @@ export const updateUser = validate(
   )
 )
 
+export const follower = validate(
+  checkSchema(
+    {
+      followedUserId: userIdSchema
+    },
+    ['body']
+  )
+)
+
+export const unfollower = validate(
+  checkSchema(
+    {
+      followedUserId: userIdSchema
+    },
+    ['params']
+  )
+)
+
 const userValidator = {
   accessToken,
   forgotPassword,
@@ -432,7 +475,9 @@ const userValidator = {
   updateUser,
   verifyEmail,
   verifyForgotPasswordToken,
-  verifyUser
+  verifyUser,
+  follower,
+  unfollower
 }
 
 export default userValidator

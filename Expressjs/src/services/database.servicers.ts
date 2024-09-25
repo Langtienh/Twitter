@@ -1,3 +1,4 @@
+import Follower from '@/models/schemas/Follower.schema'
 import RefreshToken from '@/models/schemas/RefreshToken.schema'
 import User from '@/models/schemas/Users.schema'
 import { config } from 'dotenv'
@@ -40,6 +41,10 @@ class DatabaseServices {
 
   get refreshToken(): Collection<RefreshToken> {
     return this.db.collection('refreshToken')
+  }
+
+  get follower(): Collection<Follower> {
+    return this.db.collection('follower')
   }
 }
 const databaseServices = new DatabaseServices()
