@@ -342,6 +342,22 @@ export const resetPassword = validate(
     ['body']
   )
 )
+
+export const changePassword = validate(
+  checkSchema(
+    {
+      oldPassword: {
+        notEmpty: {
+          errorMessage: USERS_MESSAGE.field.oldPassword.require
+        }
+      },
+      password: passwordSchema,
+      confirmPassword: confirmPasswordSchema
+    },
+    ['body']
+  )
+)
+
 /**
  * verify token format, exp, user-status: baned or unverify
  */
@@ -476,6 +492,7 @@ const userValidator = {
   refreshToken,
   register,
   resetPassword,
+  changePassword,
   updateUser,
   verifyEmail,
   verifyForgotPasswordToken,

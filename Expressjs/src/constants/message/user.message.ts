@@ -57,6 +57,10 @@ const USERS_MESSAGE = {
     forgotPassword: {
       require: 'Forgot password is required'
     },
+    oldPassword: {
+      require: 'Old password is required',
+      notMathch: 'Old password is incorrect'
+    },
     followedUserId: {
       require: 'FollowedUserId is require'
     },
@@ -93,6 +97,7 @@ const USERS_MESSAGE = {
     emailVerify: { success: 'Email verified successfully' },
     resendEmailVerify: { success: 'Resent email verification successfully' },
     resetPassword: { success: 'Password reset successfully' },
+    changePassword: { success: 'Password changed successfully' },
     sendLinkResetPassword: {
       success: 'Password reset link sent to email successfully'
     },

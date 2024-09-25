@@ -116,6 +116,19 @@ usersRouter.post(
 )
 
 /**
+ * Description: change password
+ * Path: /users/change-password
+ * Method: POST
+ * Body: {password: string, confirmPassword: string, oldPassword: string}
+ */
+usersRouter.post(
+  '/change-password',
+  userValidator.accessToken,
+  userValidator.changePassword,
+  wrapHandlers(userController.changePassword)
+)
+
+/**
  * Description: result user info
  * Path: /users/me
  * Method: GET

@@ -2,6 +2,7 @@ import HTTP_STATUS from '@/constants/http.status'
 import USERS_MESSAGE from '@/constants/message/user.message'
 import { AccessTokenPayload, TokenPayLoad } from '@/models/dto/payload'
 import {
+  ChangePasswordReqestBody,
   FollowRepuestBody,
   ForgotPasswordRequestBody,
   LoginRequestBody,
@@ -18,6 +19,7 @@ import { ErrorWithStatus } from '@/models/schemas/Error'
 import databaseServices from '@/services/database.servicers'
 import userServices from '@/services/users.services'
 import cleanObject from '@/utils/clearObject'
+import { hashPassword } from '@/utils/crypto'
 import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { ObjectId } from 'mongodb'
@@ -142,6 +144,31 @@ export const resetPassword = async (
   res.json({ message: USERS_MESSAGE.api.resetPassword.success, result })
 }
 
+export const changePassword = async (
+  req: Request<ParamsDictionary, any, ChangePasswordReqestBody>,
+  res: Response
+) => {
+  const { oldPassword, password } = req.body
+  const { userId } = req.decodedAuthorization as AccessTokenPayload
+  const user = await databaseServices.users.findOne({
+    _id: new ObjectId(userId)
+  })
+  if (!user) return res.status(404).json({ message: USERS_MESSAGE.notFound })
+  if (hashPassword(oldPassword) !== user.password) {
+    return res.json({ message: USERS_MESSAGE.field.oldPassword.notMathch })
+  }
+  await databaseServices.users.updateOne(
+    { _id: new ObjectId(userId) },
+    {
+      $set: {
+        password: hashPassword(password)
+      },
+      $currentDate: { updateAt: true }
+    }
+  )
+  res.json({ message: USERS_MESSAGE.api.changePassword.success })
+}
+
 export const getMe = async (
   req: Request<ParamsDictionary, any, ResetPasswordRequestBody>,
   res: Response
@@ -196,13 +223,14 @@ export const unfollower = async (req: Request, res: Response) => {
 
 const userController = {
   forgotPassword,
-  getMe,
   login,
   logout,
   refreshToken,
   register,
   resendVerifyEmail,
   resetPassword,
+  changePassword,
+  getMe,
   updateMe,
   verifyEmail,
   verifyForgotPasswordToken,

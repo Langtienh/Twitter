@@ -39,6 +39,12 @@ export interface ResetPasswordRequestBody {
   confirmPassword: string
 }
 
+export interface ChangePasswordReqestBody {
+  password: string
+  confirmPassword: string
+  oldPassword: string
+}
+
 export interface UpdateMeRepuestBody {
   name?: string
   dateOfBirth?: string
