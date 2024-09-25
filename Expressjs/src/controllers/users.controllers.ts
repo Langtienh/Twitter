@@ -21,7 +21,7 @@ import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { ObjectId } from 'mongodb'
 
-export const registerController = async (
+export const register = async (
   req: Request<ParamsDictionary, any, RegisterRequestBody>,
   res: Response
 ) => {
@@ -29,7 +29,7 @@ export const registerController = async (
   res.json({ message: USERS_MESSAGE.success.register, result })
 }
 
-export const loginController = async (
+export const login = async (
   req: Request<ParamsDictionary, any, LoginRequestBody>,
   res: Response
 ) => {
@@ -44,7 +44,7 @@ export const loginController = async (
   res.json({ message: USERS_MESSAGE.success.login, result })
 }
 
-export const logoutController = async (
+export const logout = async (
   req: Request<ParamsDictionary, any, LogoutRequestBody>,
   res: Response
 ) => {
@@ -53,7 +53,7 @@ export const logoutController = async (
   res.json({ message: USERS_MESSAGE.success.logout })
 }
 
-export const refreshTokenController = async (
+export const refreshToken = async (
   req: Request<ParamsDictionary, any, RefreshTokenRequestBody>,
   res: Response
 ) => {
@@ -65,7 +65,7 @@ export const refreshTokenController = async (
   res.json({ message: USERS_MESSAGE.success.refreshToken, result })
 }
 
-export const verifyEmailController = async (
+export const verifyEmail = async (
   req: Request<ParamsDictionary, any, VerifyEmailRequestBody>,
   res: Response
 ) => {
@@ -85,7 +85,7 @@ export const verifyEmailController = async (
   res.json({ message: USERS_MESSAGE.success.emailVerify, result })
 }
 
-export const resendVerifyEmailController = async (
+export const resendVerifyEmail = async (
   req: Request<ParamsDictionary, any>,
   res: Response
 ) => {
@@ -105,7 +105,7 @@ export const resendVerifyEmailController = async (
   res.json({ message: USERS_MESSAGE.success.resendEmailVerify })
 }
 
-export const forgotPasswordController = async (
+export const forgotPassword = async (
   req: Request<ParamsDictionary, any, ForgotPasswordRequestBody>,
   res: Response
 ) => {
@@ -117,7 +117,7 @@ export const forgotPasswordController = async (
   res.json({ message: USERS_MESSAGE.success.resetPassword })
 }
 
-export const verifyForgotPasswordTokenController = async (
+export const verifyForgotPasswordToken = async (
   req: Request<ParamsDictionary, any, VerifyForgotPasswordTokenRequestBody>,
   res: Response
 ) => {
@@ -128,7 +128,7 @@ export const verifyForgotPasswordTokenController = async (
   res.json({ message: USERS_MESSAGE.passwordReset.forgotPasswordExist })
 }
 
-export const resetPasswordController = async (
+export const resetPassword = async (
   req: Request<ParamsDictionary, any, ResetPasswordRequestBody>,
   res: Response
 ) => {
@@ -145,7 +145,7 @@ export const resetPasswordController = async (
   res.json({ message: USERS_MESSAGE.success.resetPassword, result })
 }
 
-export const getMeController = async (
+export const getMe = async (
   req: Request<ParamsDictionary, any, ResetPasswordRequestBody>,
   res: Response
 ) => {
@@ -160,7 +160,7 @@ export const getMeController = async (
   })
 }
 
-export const updateMeController = async (
+export const updateMe = async (
   req: Request<ParamsDictionary, any, UpdateMeRepuestBody>,
   res: Response
 ) => {
@@ -168,3 +168,19 @@ export const updateMeController = async (
   const result = await userServices.updateMe(userId, req.body)
   res.json({ message: USERS_MESSAGE.success.updateMe, result })
 }
+
+const userController = {
+  forgotPassword,
+  getMe,
+  login,
+  logout,
+  refreshToken,
+  register,
+  resendVerifyEmail,
+  resetPassword,
+  updateMe,
+  verifyEmail,
+  verifyForgotPasswordToken
+}
+
+export default userController

@@ -1,29 +1,6 @@
-import {
-  forgotPasswordController,
-  getMeController,
-  loginController,
-  logoutController,
-  refreshTokenController,
-  registerController,
-  resendVerifyEmailController,
-  resetPasswordController,
-  updateMeController,
-  verifyEmailController,
-  verifyForgotPasswordTokenController
-} from '@/controllers/users.controllers'
-import {
-  accessTokenValidator,
-  forgotPasswordValidator,
-  loginValidator,
-  logoutValidator,
-  refreshTokenValidator,
-  registerValidator,
-  resetPasswordValidator,
-  updateUserValidator,
-  verifyEmail,
-  verifyForgotPasswordTokenValidator,
-  verifyUser
-} from '@/middlewares/users.middleware'
+import userController from '@/controllers/users.controllers'
+import userFilter from '@/middlewares/filters-request/users.filter'
+import userValidator from '@/middlewares/users.middleware'
 import { wrapHandlers } from '@/utils/handlers'
 import { Router } from 'express'
 const usersRouter = Router()
@@ -35,8 +12,9 @@ const usersRouter = Router()
  */
 usersRouter.post(
   '/register',
-  registerValidator,
-  wrapHandlers(registerController)
+  userValidator.register,
+  userFilter.register,
+  wrapHandlers(userController.register)
 )
 /**
  * Description: login user
@@ -44,7 +22,11 @@ usersRouter.post(
  * Method: POST
  * Body: {email: string, password: string}
  */
-usersRouter.post('/login', loginValidator, wrapHandlers(loginController))
+usersRouter.post(
+  '/login',
+  userValidator.login,
+  wrapHandlers(userController.login)
+)
 
 /**
  * Description: logout user
@@ -55,9 +37,9 @@ usersRouter.post('/login', loginValidator, wrapHandlers(loginController))
  */
 usersRouter.post(
   '/logout',
-  accessTokenValidator,
-  logoutValidator,
-  wrapHandlers(logoutController)
+  userValidator.accessToken,
+  userValidator.logout,
+  wrapHandlers(userController.logout)
 )
 /**
  * Description: refresh token
@@ -67,8 +49,8 @@ usersRouter.post(
  */
 usersRouter.post(
   '/refresh-token',
-  refreshTokenValidator,
-  wrapHandlers(refreshTokenController)
+  userValidator.refreshToken,
+  wrapHandlers(userController.refreshToken)
 )
 
 /**
@@ -80,8 +62,8 @@ usersRouter.post(
  */
 usersRouter.post(
   '/verify-email',
-  verifyEmail,
-  wrapHandlers(verifyEmailController)
+  userValidator.verifyEmail,
+  wrapHandlers(userController.verifyEmail)
 )
 
 /**
@@ -93,8 +75,8 @@ usersRouter.post(
  */
 usersRouter.post(
   '/resend-verfy-email',
-  accessTokenValidator,
-  wrapHandlers(resendVerifyEmailController)
+  userValidator.accessToken,
+  wrapHandlers(userController.resendVerifyEmail)
 )
 
 /**
@@ -105,8 +87,8 @@ usersRouter.post(
  */
 usersRouter.post(
   '/forgot-password',
-  forgotPasswordValidator,
-  wrapHandlers(forgotPasswordController)
+  userValidator.forgotPassword,
+  wrapHandlers(userController.forgotPassword)
 )
 
 /**
@@ -117,8 +99,8 @@ usersRouter.post(
  */
 usersRouter.post(
   '/verify-forgot-password-token',
-  verifyForgotPasswordTokenValidator,
-  wrapHandlers(verifyForgotPasswordTokenController)
+  userValidator.verifyForgotPasswordToken,
+  wrapHandlers(userController.verifyForgotPasswordToken)
 )
 
 /**
@@ -129,8 +111,8 @@ usersRouter.post(
  */
 usersRouter.post(
   '/reset-password',
-  resetPasswordValidator,
-  wrapHandlers(resetPasswordController)
+  userValidator.resetPassword,
+  wrapHandlers(userController.resetPassword)
 )
 
 /**
@@ -139,7 +121,11 @@ usersRouter.post(
  * Method: GET
  * Header?:  {Authorization: Bearer <accessToken> }
  */
-usersRouter.get('/me', accessTokenValidator, wrapHandlers(getMeController))
+usersRouter.get(
+  '/me',
+  userValidator.accessToken,
+  wrapHandlers(userController.getMe)
+)
 
 /**
  * Description: result user info
@@ -148,6 +134,12 @@ usersRouter.get('/me', accessTokenValidator, wrapHandlers(getMeController))
  * Header?:  {Authorization: Bearer <accessToken> }
  * Body: UserSchema
  */
-usersRouter.put('/me', verifyUser, updateUserValidator, updateMeController)
+usersRouter.put(
+  '/me',
+  userValidator.verifyUser,
+  userValidator.updateUser,
+  userFilter.updateMe,
+  wrapHandlers(userController.updateMe)
+)
 
 export default usersRouter

@@ -123,7 +123,7 @@ const dateOfBirthSchema: ParamSchema = {
   isDate: { errorMessage: USERS_MESSAGE.validation.dateOfBirth.invalid }
 }
 
-export const registerValidator = validate(
+export const register = validate(
   checkSchema(
     {
       name: nameSchema,
@@ -136,7 +136,7 @@ export const registerValidator = validate(
   )
 )
 
-export const loginValidator = validate(
+export const login = validate(
   checkSchema(
     {
       email: emailSchema,
@@ -146,7 +146,7 @@ export const loginValidator = validate(
   )
 )
 
-export const accessTokenValidator = validate(
+export const accessToken = validate(
   checkSchema(
     {
       Authorization: {
@@ -170,7 +170,7 @@ export const accessTokenValidator = validate(
   )
 )
 
-export const logoutValidator = validate(
+export const logout = validate(
   checkSchema(
     {
       refreshToken: {
@@ -202,7 +202,7 @@ export const logoutValidator = validate(
   )
 )
 
-export const refreshTokenValidator = validate(
+export const refreshToken = validate(
   checkSchema(
     {
       refreshToken: {
@@ -248,7 +248,7 @@ export const verifyEmail = validate(
   )
 )
 
-export const forgotPasswordValidator = validate(
+export const forgotPassword = validate(
   checkSchema(
     {
       email: emailSchema
@@ -257,7 +257,7 @@ export const forgotPasswordValidator = validate(
   )
 )
 
-export const verifyForgotPasswordTokenValidator = validate(
+export const verifyForgotPasswordToken = validate(
   checkSchema(
     {
       forgotPasswordToken: {
@@ -279,7 +279,7 @@ export const verifyForgotPasswordTokenValidator = validate(
   )
 )
 
-export const resetPasswordValidator = validate(
+export const resetPassword = validate(
   checkSchema(
     {
       forgotPasswordToken: {
@@ -340,7 +340,7 @@ export const verifyUser = validate(
     ['headers']
   )
 )
-export const updateUserValidator = validate(
+export const updateUser = validate(
   checkSchema(
     {
       name: { ...nameSchema, optional: true, notEmpty: undefined },
@@ -420,3 +420,19 @@ export const updateUserValidator = validate(
     ['body']
   )
 )
+
+const userValidator = {
+  accessToken,
+  forgotPassword,
+  login,
+  logout,
+  refreshToken,
+  register,
+  resetPassword,
+  updateUser,
+  verifyEmail,
+  verifyForgotPasswordToken,
+  verifyUser
+}
+
+export default userValidator
