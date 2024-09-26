@@ -10,6 +10,7 @@ import {
   RefreshTokenRequestBody,
   RegisterRequestBody,
   ResetPasswordRequestBody,
+  UnFollowRepuestParam,
   UpdateMeRepuestBody,
   VerifyEmailRequestBody,
   VerifyForgotPasswordTokenRequestBody
@@ -211,7 +212,11 @@ export const follower = async (
   res.json(result)
 }
 
-export const unfollower = async (req: Request, res: Response) => {
+// todo: fix type Request khi thêm type vào request sẽ bị lỗi
+export const unfollower = async (
+  req: Request<UnFollowRepuestParam>,
+  res: Response
+) => {
   const { userId } = req.decodedAuthorization as AccessTokenPayload
   const { followedUserId } = req.params
   const result = await userServices.unfollower(

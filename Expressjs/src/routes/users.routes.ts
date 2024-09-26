@@ -119,6 +119,7 @@ usersRouter.post(
  * Description: change password
  * Path: /users/change-password
  * Method: POST
+ * Header?:  {Authorization: Bearer <accessToken> }
  * Body: {password: string, confirmPassword: string, oldPassword: string}
  */
 usersRouter.post(

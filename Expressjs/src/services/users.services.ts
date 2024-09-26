@@ -66,8 +66,8 @@ class UserServices {
     })
   }
 
-  private signRefreshToken(userId: string) {
-    return signToken({
+  private async signRefreshToken(userId: string) {
+    const refreshToken = await signToken({
       payload: {
         userId,
         tokenType: TokenType.RefreshToken
@@ -77,6 +77,8 @@ class UserServices {
       },
       privateKey: JWT_REFRESH_TOKEN_SECRET
     })
+    await this.insertRefreshToken(new ObjectId(userId), refreshToken)
+    return refreshToken
   }
 
   private signForgotPasswordToken(userId: string) {
@@ -130,7 +132,6 @@ class UserServices {
       UserVerifyStatus.Unverify,
       UserRole.user
     )
-    await this.insertRefreshToken(userId, refreshToken)
     return { accessToken, refreshToken }
   }
 
@@ -146,7 +147,6 @@ class UserServices {
       user.verify,
       user.role
     )
-    await this.insertRefreshToken(user._id, refreshToken)
     return { accessToken, refreshToken }
   }
 
@@ -171,7 +171,6 @@ class UserServices {
     await databaseServices.refreshToken.deleteOne({
       refreshToken
     })
-    await this.insertRefreshToken(user._id, newRefreshToken)
     return { accessToken, refreshToken: newRefreshToken }
   }
 
