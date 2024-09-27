@@ -35,6 +35,7 @@ export default class User {
     this.updateAt = now
     this.deleted = false
     this.emailVerifyToken = registerRequestBody.emailVerifyToken
+    this.avatar = registerRequestBody.avatar
   }
 }
 

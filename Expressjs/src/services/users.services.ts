@@ -1,4 +1,5 @@
 import { TokenType, UserRole, UserVerifyStatus } from '@/constants/enum'
+import HTTP_STATUS from '@/constants/http.status'
 import USERS_MESSAGE from '@/constants/message/user.message'
 import {
   LoginRequestBody,
@@ -6,11 +7,14 @@ import {
   RegisterRequestBody,
   UpdateMeRepuestBody
 } from '@/models/dto/users.request'
+import { ErrorWithStatus } from '@/models/schemas/Error'
 import Follower from '@/models/schemas/Follower.schema'
 import RefreshToken from '@/models/schemas/RefreshToken.schema'
 import User from '@/models/schemas/Users.schema'
+import { GoogleUserInfo } from '@/type'
 import { hashPassword } from '@/utils/crypto'
 import { signToken } from '@/utils/jwt'
+import axios from 'axios'
 import { config } from 'dotenv'
 import { Document, ObjectId } from 'mongodb'
 import databaseServices from './database.servicers'
@@ -148,6 +152,78 @@ class UserServices {
       user.role
     )
     return { accessToken, refreshToken }
+  }
+
+  private async getOauthGoogleToken(code: string) {
+    const body = {
+      code,
+      client_id: process.env.GOOGLE_CLIENT_ID,
+      client_secret: process.env.GOOGLE_CLIENT_SECRET,
+      redirect_uri: process.env.GOOGLE_REDIRECT_URI,
+      grant_type: 'authorization_code'
+    }
+
+    const { data } = await axios.post(
+      'https://oauth2.googleapis.com/token',
+      body,
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      }
+    )
+    return data
+  }
+
+  private async getUserGoogleInfo(access_token: string, id_token: string) {
+    const { data } = await axios.get(
+      'https://www.googleapis.com/oauth2/v3/userinfo',
+      {
+        params: {
+          access_token,
+          alt: 'json'
+        },
+        headers: {
+          Authorization: `Bearer ${id_token}`
+        }
+      }
+    )
+    return data as GoogleUserInfo
+  }
+
+  async oauth(code: string) {
+    const { id_token, access_token } = await this.getOauthGoogleToken(code)
+    const { email, email_verified, name, picture } =
+      await this.getUserGoogleInfo(access_token, id_token)
+    if (!email_verified) {
+      throw new ErrorWithStatus({
+        status: HTTP_STATUS.FORBIDDEN,
+        message: USERS_MESSAGE.field.verify.unverified
+      })
+    }
+    const user = await this.getUser({ email })
+    if (user) {
+      const [accessToken, refreshToken] = await this.signAccessAndRefreshToken(
+        user._id.toString(),
+        user.verify,
+        user.role
+      )
+      return { accessToken, refreshToken, new: false }
+    } else {
+      const newUser = new User({
+        name,
+        email,
+        password: hashPassword(email),
+        avatar: picture
+      })
+      const result = await databaseServices.users.insertOne(newUser)
+      const [accessToken, refreshToken] = await this.signAccessAndRefreshToken(
+        result.insertedId.toString(),
+        UserVerifyStatus.Unverify,
+        UserRole.user
+      )
+      return { accessToken, refreshToken, new: true }
+    }
   }
 
   async logout(logoutRequestBody: LogoutRequestBody) {

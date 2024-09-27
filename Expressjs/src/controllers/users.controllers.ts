@@ -48,6 +48,19 @@ export const login = async (
   res.json({ message: USERS_MESSAGE.api.login.success, result })
 }
 
+export const oauth = async (req: Request<ParamsDictionary>, res: Response) => {
+  const { code } = req.query
+  const data = await userServices.oauth(code as string)
+  const rootUrl = process.env.FRONTEND_URL
+  const otions = {
+    access_token: data.accessToken,
+    refresh_token: data.refreshToken,
+    new: data.new.toString()
+  }
+  const qs = new URLSearchParams(otions)
+  return res.redirect(`${rootUrl}?${qs.toString()}`)
+}
+
 export const logout = async (
   req: Request<ParamsDictionary, any, LogoutRequestBody>,
   res: Response
@@ -240,7 +253,8 @@ const userController = {
   verifyEmail,
   verifyForgotPasswordToken,
   follower,
-  unfollower
+  unfollower,
+  oauth
 }
 
 export default userController

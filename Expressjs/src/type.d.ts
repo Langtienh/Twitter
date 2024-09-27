@@ -11,3 +11,11 @@ declare module 'express' {
     decodeForgotPasswordToken?: TokenPayLoad
   }
 }
+
+interface GoogleUserInfo {
+  sub: string
+  name: string
+  picture?: string
+  email: string
+  email_verified: boolean
+}

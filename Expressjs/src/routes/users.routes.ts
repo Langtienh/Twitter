@@ -183,4 +183,12 @@ usersRouter.delete(
   wrapHandlers(userController.unfollower)
 )
 
+/**
+ * Description: oauth with google
+ * Path: /users/follow/:user-id:
+ * Method: GET
+ * query: {code}
+ */
+usersRouter.get('/oauth/google', wrapHandlers(userController.oauth))
+
 export default usersRouter
